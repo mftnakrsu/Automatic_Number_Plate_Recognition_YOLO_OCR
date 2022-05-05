@@ -63,19 +63,19 @@ The pipeline in the project is as follows:
 
 ## Some Result
 
-As you can see, first step is detect the plate with using Yolov5. 
+* As you can see, first step is detect the plate with using Yolov5. 
 
 ![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/realtime.png)
 
-After detect plate, apply the ocr. Paddle ocr Easy ocr for recognizing plate.  
+* After detect plate, apply the ocr. Paddle ocr Easy ocr for recognizing plate.  
 
 ![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/plate_recog.jpg)
 
-Then write csv or database, when put it all in one.  
+* Then write csv or database, when put it all in one.  
 
 ![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/all.png)
 
-The last step is Flask :) Actually, I didn't have time to integrate all the code in Flask. I just uploaded the yolov5 part. If you do, don't forget to pull request :)  
+* The last step is Flask :) Actually, I didn't have time to integrate all the code in Flask. I just uploaded the yolov5 part. If you do, don't forget to pull request :)  
 
 ![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/flask_test.png)
 
