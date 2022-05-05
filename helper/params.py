@@ -1,3 +1,4 @@
+# It contains all the parameters that are used in the program.
 import torch
 
 class Parameters():

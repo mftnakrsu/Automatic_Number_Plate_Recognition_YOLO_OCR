@@ -11,6 +11,10 @@ from utils.params import Parameters
 params = Parameters()
 
 def load_yolov5_model():
+    """
+    It loads the model and returns the model and the names of the classes.
+    :return: model, names
+    """
     model = attempt_load(params.model, map_location=params.device)
     print("device",params.device)
     stride = int(model.stride.max())  # model stride
@@ -20,6 +24,15 @@ def load_yolov5_model():
 
 
 def detection(frame, model, names):
+    """
+    It takes an image, runs it through the model, and returns the image with bounding boxes drawn around
+    the detected objects
+    
+    :param frame: The frame of video or webcam feed on which we're running inference
+    :param model: The model to use for detection
+    :param names: a list of class names
+    :return: the image with the bounding boxes and the label of the detected object.
+    """
     out = frame.copy()
 
     frame = cv2.resize(frame, (params.pred_shape[1], params.pred_shape[0]), interpolation=cv2.INTER_LINEAR)
