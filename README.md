@@ -1,9 +1,11 @@
 # Automatic Number Plate Recognition
+
 ![dataset-cover](https://user-images.githubusercontent.com/57320216/166916670-03dfabe1-8c6c-471a-875c-8715354aa957.jpg)
 
 **Automatic Number Plate Recognition (ANPR)** is the process of reading the characters on the plate with various optical character recognition (OCR) methods by separating the plate region on the vehicle image obtained from automatic plate recognition.
 
 ## Table of Content
+
 - [Automatic Number Plate Recognition](#automatic-number-plate-recognition)
 
   * [What will you learn this project ](#what-will-you-learn-this-project)
@@ -17,6 +19,7 @@
 
 
 ## What will you learn this project 
+
 * Custom Object Detection
 * Scene Text Detection
 * Scene Text Recognation
@@ -31,6 +34,7 @@ The dataset I use for license plate detection:
 https://www.kaggle.com/datasets/andrewmvd/car-plate-detection
 
 ## Installation
+
 Clone repo and install requirements.txt in a Python>=3.7.0 environment.
 
     git clone https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR.git  # clone
@@ -38,12 +42,16 @@ Clone repo and install requirements.txt in a Python>=3.7.0 environment.
     pip install -r requirements.txt  # install
 
 ## Usage
+
 After the req libraries are installed, you can run the project by main.py.
 
     python main.py
 
 ## Project architecture
-The pipeline in the project is as follows:
+
+The pipeline in the project is as follows:  
+
+![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/flowchart.png)
 
 - Custom object detection with plate extraction using yolov5
 - Apply the extracted plate to EasyOCR and PaddleOCR
@@ -52,9 +60,26 @@ The pipeline in the project is as follows:
 - Write Database and CSV format
 - Upload to Flask  
 
-![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/flowchart.png)
 
 ## Some Result
+
+As you can see, first step is detect the plate with using Yolov5. 
+
+![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/realtime.png)
+
+After detect plate, apply the ocr. Paddle ocr Easy ocr for recognizing plate.  
+
+![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/plate_recog.jpg)
+
+Then write csv or database, when put it all in one.  
+
+![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/all.png)
+
+The last step is Flask :) Actually, I didn't have time to integrate all the code in Flask. I just uploaded the yolov5 part. If you do, don't forget to pull request :)  
+
+![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/flask_test.png)
+
+
 ## Source  
 - https://docs.python.org/3/library/csv.html  
 - https://github.com/ultralytics/yolov5  
