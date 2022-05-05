@@ -90,3 +90,7 @@ The pipeline in the project is as follows:
 
 ## Licence
 [MIT](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/LICENSE)
+
+## To Do 
+- [ ] use fcaykon pip yolo instead of hardcoded yolo files
+- [ ] hugging face
