@@ -35,7 +35,7 @@ if __name__ == '__main__':
 # Detecting the text from the image.
             detected, _ = detection(frame, model, labels)
 # Reading the text from the image.
-            resulteasyocr=text_reader.readtext(detected) #text_read.recognize()
+            resulteasyocr=text_reader.readtext(detected) #text_read.recognize() , you can use cropped plate image or whole image
 # Filtering the text from the image.
             text = filter_text(params.rect_size,resulteasyocr,params.region_threshold)
 # Saving the results of the OCR in a csv file.
