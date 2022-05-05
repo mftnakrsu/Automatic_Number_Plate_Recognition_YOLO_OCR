@@ -23,6 +23,10 @@ model.iou = 0.45
 from io import BytesIO
 
 def gen():
+    """
+    The function takes in a video stream from the webcam, runs it through the model, and returns the
+    output of the model as a video stream
+    """
     cap=cv2.VideoCapture(0)
     while(cap.isOpened()):
         success, frame = cap.read()
@@ -41,6 +45,10 @@ def gen():
 
 @app.route('/video')
 def video():
+    """
+    It returns a response object that contains a generator function that yields a sequence of images
+    :return: A response object with the gen() function as the body.
+    """
     return Response(gen(),
                         mimetype='multipart/x-mixed-replace; boundary=frame')
 
@@ -48,6 +56,11 @@ def video():
 
 @app.route("/", methods=["GET", "POST"])
 def predict():
+    """
+    The function takes in an image, runs it through the model, and then saves the output image to a
+    static folder
+    :return: The image is being returned.
+    """
     if request.method == "POST":
         if "file" not in request.files:
             return redirect(request.url)

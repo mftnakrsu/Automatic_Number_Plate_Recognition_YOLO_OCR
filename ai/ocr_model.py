@@ -11,11 +11,23 @@ params = Parameters()
 
 
 def easyocr_model_load():
+    """
+    It takes in an image and returns the text in the image
+    :return: The text_reader is being returned.
+    """
   
     text_reader = easyocr.Reader(['en']) #Initialzing the ocr
     return text_reader
 
 def easyocr_model_works(text_reader,images,visualization=False):
+    """
+    It takes a list of images and returns a list of texts
+    
+    :param text_reader: The text reader object
+    :param images: list of images
+    :param visualization: If True, it will show the images with the bounding boxes and the text,
+    defaults to False (optional)
+    """
     
     texts=list()
     for i in range(len(images)):
@@ -29,6 +41,13 @@ def easyocr_model_works(text_reader,images,visualization=False):
     return texts
 
 def pytesseract_model_works(images,visualization=False):
+    """
+    It takes in a list of images and returns a list of predictions
+    
+    :param images: list of images
+    :param visualization: If True, it will show the image and the predicted text, defaults to False
+    (optional)
+    """
     
     tesseract_preds = []
     for img in images:
