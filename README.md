@@ -80,6 +80,15 @@ The pipeline in the project is as follows:
 ![images](https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/blob/main/imgs/flask_test.png)
 
 
+## Similar work
+A streamlit based implementation of Automatic Number Plate Recognition for cars and other vehicles using images or live camera feed.
+
+![Animation](https://user-images.githubusercontent.com/29462447/168389056-9f39b89d-1221-432b-878d-578d9114d466.gif)
+![live feed demo](https://user-images.githubusercontent.com/29462447/168389042-c06f3dd2-5047-4138-8c11-07372d63046a.gif)
+
+The entire code for the webapp can be found [here.](https://github.com/prateekralhan/Streamlit-based-Automatic-Number-Plate-Recognition)
+
+
 ## Source  
 - https://docs.python.org/3/library/csv.html  
 - https://github.com/ultralytics/yolov5  
