@@ -18,7 +18,7 @@ openvino==2021.4.2
 pytesseract==0.3.9
 albumentations==1.1.0
 export==0.2.0
-ipython==8.3.0
+ipython==8.10.0
 keras_ocr==0.8.9
 pafy==0.5.5
 Pillow==9.1.0
