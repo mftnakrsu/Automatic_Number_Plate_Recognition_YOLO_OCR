@@ -11,7 +11,7 @@ coremltools==5.2.0
 torchvision==0.9.1
 requests==2.25.1
 psutil==5.8.0
-numpy==1.16.4
+numpy==1.22.0
 scipy==1.4.1
 tqdm==4.63.0
 openvino==2021.4.2
