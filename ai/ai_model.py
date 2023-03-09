@@ -2,13 +2,14 @@ import numpy as np
 import cv2
 import torch
 from models.experimental import attempt_load
-from utils.general import non_max_suppression,xyxy2xywh
+from utils.general import non_max_suppression, xyxy2xywh
 import torch.backends.cudnn as cudnn
 
-from  cv2 import VideoCapture
+from cv2 import VideoCapture
 from utils.params import Parameters
 
 params = Parameters()
+
 
 def load_yolov5_model():
     """
@@ -16,9 +17,11 @@ def load_yolov5_model():
     :return: model, names
     """
     model = attempt_load(params.model, map_location=params.device)
-    print("device",params.device)
+    print("device", params.device)
     stride = int(model.stride.max())  # model stride
-    names = model.module.names if hasattr(model, 'module') else model.names  # get class names
+    names = (
+        model.module.names if hasattr(model, "module") else model.names
+    )  # get class names
 
     return model, names
 
@@ -35,13 +38,21 @@ def detection(frame, model, names):
     """
     out = frame.copy()
 
-    frame = cv2.resize(frame, (params.pred_shape[1], params.pred_shape[0]), interpolation=cv2.INTER_LINEAR)
+    frame = cv2.resize(
+        frame,
+        (params.pred_shape[1], params.pred_shape[0]),
+        interpolation=cv2.INTER_LINEAR,
+    )
     frame = np.transpose(frame, (2, 1, 0))
 
     cudnn.benchmark = True  # set True to speed up constant image size inference
 
-    if params.device.type != 'cpu':
-        model(torch.zeros(1, 3, params.imgsz, params.imgsz).to(params.device).type_as(next(model.parameters())))  # run once
+    if params.device.type != "cpu":
+        model(
+            torch.zeros(1, 3, params.imgsz, params.imgsz)
+            .to(params.device)
+            .type_as(next(model.parameters()))
+        )  # run once
 
     frame = torch.from_numpy(frame).to(params.device)
     frame = frame.float()
@@ -54,25 +65,28 @@ def detection(frame, model, names):
     pred = model(frame, augment=False)[0]
     pred = non_max_suppression(pred, params.conf_thres, max_det=params.max_det)
 
-    label=""
+    label = ""
     # detections per image
     for i, det in enumerate(pred):
 
         img_shape = frame.shape[2:]
         out_shape = out.shape
 
-        s_ = f'{i}: '
-        s_ += '%gx%g ' % img_shape  # print string
+        s_ = f"{i}: "
+        s_ += "%gx%g " % img_shape  # print string
 
         if len(det):
 
-            gain = min(img_shape[0] / out_shape[0], img_shape[1] / out_shape[1])  # gain  = old / new
+            gain = min(
+                img_shape[0] / out_shape[0], img_shape[1] / out_shape[1]
+            )  # gain  = old / new
 
             coords = det[:, :4]
 
-
-            pad = (img_shape[1] - out_shape[1] * gain) / 2, (
-                    img_shape[0] - out_shape[0] * gain) / 2  # wh padding
+            pad = (
+                (img_shape[1] - out_shape[1] * gain) / 2,
+                (img_shape[0] - out_shape[0] * gain) / 2,
+            )  # wh padding
 
             coords[:, [0, 2]] -= pad[0]  # x padding
             coords[:, [1, 3]] -= pad[1]  # y padding
@@ -99,26 +113,40 @@ def detection(frame, model, names):
                 confidence_score = conf
                 class_index = cls
                 object_name = names[int(cls)]
-                
-                detected_plate = frame[:,:,y1:y2, x1:x2].squeeze().permute(1, 2, 0).cpu().numpy()
-                cv2.imshow("Crooped Plate ",detected_plate)
 
-                #rect_size= (detected_plate.shape[0]*detected_plate.shape[1])
+                detected_plate = (
+                    frame[:, :, y1:y2, x1:x2].squeeze().permute(1, 2, 0).cpu().numpy()
+                )
+                cv2.imshow("Crooped Plate ", detected_plate)
+
+                # rect_size= (detected_plate.shape[0]*detected_plate.shape[1])
                 c = int(cls)  # integer class
-                label = names[c] if params.hide_conf else f'{names[c]} {conf:.2f}'
+                label = names[c] if params.hide_conf else f"{names[c]} {conf:.2f}"
 
                 tl = params.rect_thickness
 
                 c1, c2 = (int(xyxy[0]), int(xyxy[1])), (int(xyxy[2]), int(xyxy[3]))
-                cv2.rectangle(out, c1, c2, params.color, thickness=tl, lineType=cv2.LINE_AA)
+                cv2.rectangle(
+                    out, c1, c2, params.color, thickness=tl, lineType=cv2.LINE_AA
+                )
 
                 if label:
                     tf = max(tl - 1, 1)  # font thickness
-                    t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
+                    t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[
+                        0
+                    ]
                     c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
                     cv2.rectangle(out, c1, c2, params.color, -1, cv2.LINE_AA)  # filled
-                    cv2.putText(out, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf,
-                                lineType=cv2.LINE_AA)
+                    cv2.putText(
+                        out,
+                        label,
+                        (c1[0], c1[1] - 2),
+                        0,
+                        tl / 3,
+                        [225, 255, 255],
+                        thickness=tf,
+                        lineType=cv2.LINE_AA,
+                    )
 
     return out, label
     # fps = 'FPS: {0:.2f}'.format(frame_rate_calc)
@@ -133,4 +161,3 @@ def detection(frame, model, names):
     #             params.color_blue,
     #             params.thickness,
     #             cv2.LINE_AA)
-
