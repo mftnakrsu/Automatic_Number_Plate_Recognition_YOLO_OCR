@@ -161,4 +161,3 @@ def detection(frame, model, names):
     #             params.color_blue,
     #             params.thickness,
     #             cv2.LINE_AA)
-

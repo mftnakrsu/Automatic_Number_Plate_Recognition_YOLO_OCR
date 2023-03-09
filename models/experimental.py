@@ -33,7 +33,9 @@ class Sum(nn.Module):
         self.weight = weight  # apply weights boolean
         self.iter = range(n - 1)  # iter object
         if weight:
-            self.w = nn.Parameter(-torch.arange(1.0, n) / 2, requires_grad=True)  # layer weights
+            self.w = nn.Parameter(
+                -torch.arange(1.0, n) / 2, requires_grad=True
+            )  # layer weights
 
     def forward(self, x):
         y = x[0]  # no weight
@@ -49,11 +51,13 @@ class Sum(nn.Module):
 
 class MixConv2d(nn.Module):
     # Mixed Depth-wise Conv https://arxiv.org/abs/1907.09595
-    def __init__(self, c1, c2, k=(1, 3), s=1, equal_ch=True):  # ch_in, ch_out, kernel, stride, ch_strategy
+    def __init__(
+        self, c1, c2, k=(1, 3), s=1, equal_ch=True
+    ):  # ch_in, ch_out, kernel, stride, ch_strategy
         super().__init__()
         n = len(k)  # number of convolutions
         if equal_ch:  # equal c_ per group
-            i = torch.linspace(0, n - 1E-6, c2).floor()  # c2 indices
+            i = torch.linspace(0, n - 1e-6, c2).floor()  # c2 indices
             c_ = [(i == g).sum() for g in range(n)]  # intermediate channels
         else:  # equal weight.numel() per group
             b = [c2] + [0] * n
@@ -61,10 +65,18 @@ class MixConv2d(nn.Module):
             a -= np.roll(a, 1, axis=1)
             a *= np.array(k) ** 2
             a[0] = 1
-            c_ = np.linalg.lstsq(a, b, rcond=None)[0].round()  # solve for equal weight indices, ax = b
+            c_ = np.linalg.lstsq(a, b, rcond=None)[
+                0
+            ].round()  # solve for equal weight indices, ax = b
 
-        self.m = nn.ModuleList([
-            nn.Conv2d(c1, int(c_), k, s, k // 2, groups=math.gcd(c1, int(c_)), bias=False) for k, c_ in zip(k, c_)])
+        self.m = nn.ModuleList(
+            [
+                nn.Conv2d(
+                    c1, int(c_), k, s, k // 2, groups=math.gcd(c1, int(c_)), bias=False
+                )
+                for k, c_ in zip(k, c_)
+            ]
+        )
         self.bn = nn.BatchNorm2d(c2)
         self.act = nn.SiLU()
 
@@ -94,8 +106,10 @@ def attempt_load(weights, map_location=None, inplace=True, fuse=True):
     model = Ensemble()
     for w in weights if isinstance(weights, list) else [weights]:
         ckpt = torch.load(attempt_download(w), map_location=map_location)  # load
-        ckpt = (ckpt.get('ema') or ckpt['model']).float()  # FP32 model
-        model.append(ckpt.fuse().eval() if fuse else ckpt.eval())  # fused or un-fused model in eval mode
+        ckpt = (ckpt.get("ema") or ckpt["model"]).float()  # FP32 model
+        model.append(
+            ckpt.fuse().eval() if fuse else ckpt.eval()
+        )  # fused or un-fused model in eval mode
 
     # Compatibility updates
     for m in model.modules():
@@ -103,20 +117,26 @@ def attempt_load(weights, map_location=None, inplace=True, fuse=True):
         if t in (nn.Hardswish, nn.LeakyReLU, nn.ReLU, nn.ReLU6, nn.SiLU, Detect, Model):
             m.inplace = inplace  # torch 1.7.0 compatibility
             if t is Detect:
-                if not isinstance(m.anchor_grid, list):  # new Detect Layer compatibility
-                    delattr(m, 'anchor_grid')
-                    setattr(m, 'anchor_grid', [torch.zeros(1)] * m.nl)
+                if not isinstance(
+                    m.anchor_grid, list
+                ):  # new Detect Layer compatibility
+                    delattr(m, "anchor_grid")
+                    setattr(m, "anchor_grid", [torch.zeros(1)] * m.nl)
         elif t is Conv:
             m._non_persistent_buffers_set = set()  # torch 1.6.0 compatibility
-        elif t is nn.Upsample and not hasattr(m, 'recompute_scale_factor'):
+        elif t is nn.Upsample and not hasattr(m, "recompute_scale_factor"):
             m.recompute_scale_factor = None  # torch 1.11.0 compatibility
 
     if len(model) == 1:
         return model[-1]  # return model
     else:
-        print(f'Ensemble created with {weights}\n')
-        for k in 'names', 'nc', 'yaml':
+        print(f"Ensemble created with {weights}\n")
+        for k in "names", "nc", "yaml":
             setattr(model, k, getattr(model[0], k))
-        model.stride = model[torch.argmax(torch.tensor([m.stride.max() for m in model])).int()].stride  # max stride
-        assert all(model[0].nc == m.nc for m in model), f'Models have different class counts: {[m.nc for m in model]}'
+        model.stride = model[
+            torch.argmax(torch.tensor([m.stride.max() for m in model])).int()
+        ].stride  # max stride
+        assert all(
+            model[0].nc == m.nc for m in model
+        ), f"Models have different class counts: {[m.nc for m in model]}"
         return model  # return ensemble

@@ -32,4 +32,3 @@ class Parameters:
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
         self.model = "/home/mef/Documents/plate_detection_project/best.pt"
-

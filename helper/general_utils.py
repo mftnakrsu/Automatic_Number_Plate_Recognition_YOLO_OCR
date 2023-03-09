@@ -40,4 +40,3 @@ def save_results(text, csv_filename, folder_path):
             f, delimiter=",", quotechar='"', quoting=csv.QUOTE_MINIMAL
         )
         csv_writer.writerow([text])
-

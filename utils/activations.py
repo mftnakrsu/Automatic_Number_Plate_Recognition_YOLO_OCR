@@ -33,7 +33,6 @@ class Mish(nn.Module):
 class MemoryEfficientMish(nn.Module):
     # Mish activation memory-efficient
     class F(torch.autograd.Function):
-
         @staticmethod
         def forward(ctx, x):
             ctx.save_for_backward(x)
