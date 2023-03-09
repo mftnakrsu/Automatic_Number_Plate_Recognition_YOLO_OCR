@@ -1,10 +1,11 @@
 # It contains all the parameters that are used in the program.
 import torch
 
-class Parameters():
+
+class Parameters:
     def __init__(self):
 
-        self.weights = 'best.pt'
+        self.weights = "best.pt"
 
         self.imgsz = 640
         self.conf_thres = 0.25
@@ -24,10 +25,11 @@ class Parameters():
         self.thickness = 2
         self.rect_thickness = 3
 
-        self.rect_size=15000
+        self.rect_size = 15000
 
         self.pred_shape = (480, 640, 3)
         self.vis_shape = (800, 600)
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        self.model="/home/mef/Documents/plate_detection_project/best.pt"
+        self.model = "/home/mef/Documents/plate_detection_project/best.pt"
+
