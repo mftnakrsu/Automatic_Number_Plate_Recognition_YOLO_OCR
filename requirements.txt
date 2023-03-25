@@ -1,4 +1,4 @@
-tensorflow==2.9.3
+tensorflow==2.11.1
 matplotlib==3.5.1
 torch==1.13.1
 pandas==1.2.4
