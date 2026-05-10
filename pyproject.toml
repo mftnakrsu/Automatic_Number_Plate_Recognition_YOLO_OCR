@@ -1,0 +1,144 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "anpr"
+version = "0.2.0"
+description = "Automatic Number Plate Recognition — 2026 modernized pipeline (fast-alpr + FastAPI)"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = "MIT"
+authors = [{ name = "Meftun AKARSU", email = "meftunakrsu@gmail.com" }]
+keywords = ["anpr", "alpr", "license-plate", "ocr", "yolo", "computer-vision"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+
+dependencies = [
+    "fast-alpr>=0.4.0",
+    "fast-plate-ocr>=1.1.0",
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "structlog>=24.4",
+    "sqlmodel>=0.0.22",
+    "aiosqlite>=0.20",
+    "typer>=0.15",
+    "opencv-python-headless>=4.10",
+    "numpy>=2.1",
+    "pillow>=11.0",
+    "python-multipart>=0.0.20",
+    "jinja2>=3.1",
+    "rich>=13.9",
+    "prometheus-client>=0.21",
+]
+
+[project.optional-dependencies]
+gpu = ["onnxruntime-gpu>=1.20"]
+paddle = ["paddleocr>=3.5", "paddlepaddle>=3.0"]
+otel = [
+    "opentelemetry-api>=1.27",
+    "opentelemetry-sdk>=1.27",
+    "opentelemetry-instrumentation-fastapi>=0.48b0",
+    "opentelemetry-exporter-otlp>=1.27",
+]
+
+[project.scripts]
+anpr = "anpr.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR"
+Issues = "https://github.com/mftnakrsu/Automatic-number-plate-recognition-YOLO-OCR/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/anpr"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "hypothesis>=6.115",
+    "syrupy>=4.7",
+    "ruff>=0.7",
+    "pyright>=1.1.385",
+    "pre-commit>=4.0",
+    "httpx>=0.28",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+extend-exclude = ["legacy"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",   # pycodestyle / pyflakes
+    "I",             # isort
+    "N",             # pep8-naming
+    "UP",            # pyupgrade
+    "B",             # bugbear
+    "C4",            # comprehensions
+    "SIM",           # simplify
+    "RUF",           # ruff-specific
+    "PT",            # pytest-style
+    "ANN",           # annotations
+    "TID",           # tidy imports
+    "PERF",          # perflint
+    "PL",            # pylint subset
+]
+ignore = [
+    "ANN401",  # any-type sometimes fine
+    "PLR0913", # too many arguments
+    "PLR2004", # magic value (CV constants)
+    "E501",    # line length handled by formatter
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN", "PLR", "S101"]
+"scripts/**" = ["ANN"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.pyright]
+include = ["src", "tests"]
+exclude = ["legacy/**", "**/__pycache__"]
+pythonVersion = "3.11"
+typeCheckingMode = "standard"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --strict-markers"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning:pkg_resources",
+]
+
+[tool.coverage.run]
+source = ["src/anpr"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
