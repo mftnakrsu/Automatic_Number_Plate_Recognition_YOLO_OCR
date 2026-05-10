@@ -24,6 +24,7 @@ classifiers = [
 dependencies = [
     "fast-alpr>=0.4.0",
     "fast-plate-ocr>=1.1.0",
+    "onnxruntime>=1.20",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.32.0",
     "pydantic>=2.9",
