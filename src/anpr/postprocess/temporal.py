@@ -8,8 +8,8 @@ this single trick lifts accuracy on low-resolution plates from ~31% to ~45%.
 
 from __future__ import annotations
 
-from collections import Counter, defaultdict, deque
-from dataclasses import dataclass, field
+from collections import defaultdict, deque
+from dataclasses import dataclass
 
 
 @dataclass(slots=True)
@@ -56,10 +56,10 @@ def _vote(reads: deque[tuple[str, float]], *, top_k: int) -> str:
     max_len = max(len(t) for t, _ in top)
     chars: list[str] = []
     for i in range(max_len):
-        weights: Counter[str] = Counter()
+        weights: dict[str, float] = defaultdict(float)
         for text, conf in top:
             if i < len(text):
                 weights[text[i]] += conf
         if weights:
-            chars.append(weights.most_common(1)[0][0])
+            chars.append(max(weights.items(), key=lambda kv: kv[1])[0])
     return "".join(chars)

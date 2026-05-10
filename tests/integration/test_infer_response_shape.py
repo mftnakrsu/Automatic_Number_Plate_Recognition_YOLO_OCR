@@ -8,7 +8,6 @@ exact key sets so accidental drift fails loudly.
 from __future__ import annotations
 
 import io
-from collections.abc import Iterator
 
 import cv2
 import numpy as np
@@ -29,15 +28,15 @@ class _MockDetector:
 
 
 class _MockReader:
-    def read(self, c: np.ndarray) -> OcrResult | None:
+    def read(self, plate_crop: np.ndarray) -> OcrResult | None:
         return OcrResult(text="34 ABC 1234", confidence=0.96)
 
-    def read_batch(self, cs: list[np.ndarray]) -> list[OcrResult | None]:
-        return [self.read(c) for c in cs]
+    def read_batch(self, plate_crops: list[np.ndarray]) -> list[OcrResult | None]:
+        return [self.read(c) for c in plate_crops]
 
 
 @pytest.fixture
-def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
+def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     monkeypatch.setenv("ANPR_PLATE_HMAC_PEPPER", "x" * 64)
     from anpr.api import deps as deps_mod
     from anpr.api.app import create_app
@@ -53,7 +52,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
             return []
 
     deps_mod._REPO = _StubRepo()  # type: ignore[attr-defined]
-    yield TestClient(create_app())
+    return TestClient(create_app())
 
 
 _INFER_KEYS = {"bbox", "detection_confidence", "raw_text", "normalized_text", "parsed"}

@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -57,19 +57,23 @@ class DetectionRepository:
         confirmed_only: bool = False,
     ) -> list[Detection]:
         async with self.session() as s:
-            stmt = select(Detection).order_by(Detection.timestamp.desc()).limit(limit)
+            stmt = (
+                select(Detection)
+                .order_by(Detection.timestamp.desc())  # type: ignore[attr-defined]
+                .limit(limit)
+            )
             if confirmed_only:
-                stmt = stmt.where(Detection.confirmed.is_(True))
+                stmt = stmt.where(Detection.confirmed.is_(True))  # type: ignore[attr-defined]
             result = await s.execute(stmt)
             return list(result.scalars().all())
 
     async def purge_older_than(self, retention_hours: int) -> int:
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=retention_hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=retention_hours)
         async with self.session() as s:
-            stmt = delete(Detection).where(Detection.timestamp < cutoff)
+            stmt = delete(Detection).where(Detection.timestamp < cutoff)  # type: ignore[arg-type]
             result = await s.execute(stmt)
             await s.commit()
-            return result.rowcount or 0
+            return result.rowcount or 0  # type: ignore[attr-defined]
 
 
 async def retention_worker(

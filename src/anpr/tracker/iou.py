@@ -78,8 +78,7 @@ class IoUTracker:
             assigned.append((tid, detections[di]))
 
         stale = [
-            tid for tid, t in self._tracks.items()
-            if self._frame_idx - t.last_frame > self._max_age
+            tid for tid, t in self._tracks.items() if self._frame_idx - t.last_frame > self._max_age
         ]
         for tid in stale:
             del self._tracks[tid]
