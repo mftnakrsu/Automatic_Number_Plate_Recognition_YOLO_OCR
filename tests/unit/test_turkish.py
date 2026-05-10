@@ -26,14 +26,14 @@ def test_parses_valid_plates(text: str, expected_canonical: str) -> None:
 @pytest.mark.parametrize(
     "text",
     [
-        "82ABC123",   # province > 81
-        "00ABC123",   # province 00
-        "99XYZ999",   # province 99
-        "",           # empty
-        "HELLO",      # no digits
-        "12345678",   # all digits
-        "ABCDEFGH",   # all letters
-        "34A4",       # too short
+        "82ABC123",  # province > 81
+        "00ABC123",  # province 00
+        "99XYZ999",  # province 99
+        "",  # empty
+        "HELLO",  # no digits
+        "12345678",  # all digits
+        "ABCDEFGH",  # all letters
+        "34A4",  # too short
         "34ABCDE1234",  # too long
     ],
 )

@@ -67,9 +67,7 @@ async def infer_endpoint(
     reads = infer_image(bgr, detector, reader)
     INFERENCE_LATENCY.labels(route="infer").observe(time.perf_counter() - start)
     for r in reads:
-        DETECTIONS.labels(
-            route="infer", parsed="valid" if r.parsed else "invalid"
-        ).inc()
+        DETECTIONS.labels(route="infer", parsed="valid" if r.parsed else "invalid").inc()
     return [
         InferenceResult(
             bbox=BBoxOut(

@@ -53,7 +53,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
             return []
 
     deps_mod._REPO = _StubRepo()  # type: ignore[attr-defined]
-    yield TestClient(create_app())
+    return TestClient(create_app())
 
 
 _INFER_KEYS = {"bbox", "detection_confidence", "raw_text", "normalized_text", "parsed"}

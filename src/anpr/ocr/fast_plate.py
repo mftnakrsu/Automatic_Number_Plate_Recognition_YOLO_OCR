@@ -49,10 +49,6 @@ def _coerce(out: object) -> OcrResult | None:
     text = str(texts[0]).strip()
     if not text:
         return None
-    char_confs = (
-        tuple(float(c) for c in confs[0])
-        if confs and confs[0] is not None
-        else ()
-    )
+    char_confs = tuple(float(c) for c in confs[0]) if confs and confs[0] is not None else ()
     agg = sum(char_confs) / len(char_confs) if char_confs else 1.0
     return OcrResult(text=text, confidence=agg, char_confidences=char_confs)

@@ -43,7 +43,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
             return []
 
     deps_mod._REPO = _StubRepo()  # type: ignore[attr-defined]
-    yield TestClient(create_app())
+    return TestClient(create_app())
 
 
 def test_metrics_endpoint_text(client: TestClient) -> None:

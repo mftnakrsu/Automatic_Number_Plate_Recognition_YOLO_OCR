@@ -102,6 +102,9 @@ ignore = [
     "PLR0913", # too many arguments
     "PLR2004", # magic value (CV constants)
     "E501",    # line length handled by formatter
+    "PLC0415", # lazy imports are intentional for heavy ML deps
+    "RUF001",  # Turkish-language "ı" in PROVINCE_CODES is correct, not ambiguous
+    "PLW0603", # module-level singleton globals (api/deps.py) are intentional
 ]
 
 [tool.ruff.lint.per-file-ignores]

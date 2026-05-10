@@ -33,9 +33,7 @@ def main() -> None:
     parser.add_argument("--opset", type=int, default=17)
     parser.add_argument("--simplify", action="store_true")
     parser.add_argument("--half", action="store_true", help="FP16 export (CUDA only)")
-    parser.add_argument(
-        "--device", default="cpu", help="Export device (cpu / cuda / 0)"
-    )
+    parser.add_argument("--device", default="cpu", help="Export device (cpu / cuda / 0)")
     args = parser.parse_args()
 
     if not args.checkpoint.exists():

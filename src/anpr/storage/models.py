@@ -6,13 +6,13 @@ deliberate; see `anpr.storage.hashing` for the KVKK/GDPR rationale.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlmodel import Field, SQLModel
 
 
 def _utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class Detection(SQLModel, table=True):

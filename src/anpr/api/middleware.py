@@ -52,8 +52,6 @@ class MetricsMiddleware(BaseHTTPMiddleware):
         start = time.perf_counter()
         response = await call_next(request)
         elapsed = time.perf_counter() - start
-        REQUESTS.labels(
-            method=request.method, path=path, status=str(response.status_code)
-        ).inc()
+        REQUESTS.labels(method=request.method, path=path, status=str(response.status_code)).inc()
         REQUEST_LATENCY.labels(method=request.method, path=path).observe(elapsed)
         return response

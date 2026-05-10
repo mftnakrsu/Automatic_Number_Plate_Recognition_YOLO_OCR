@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -64,7 +64,7 @@ class DetectionRepository:
             return list(result.scalars().all())
 
     async def purge_older_than(self, retention_hours: int) -> int:
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=retention_hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=retention_hours)
         async with self.session() as s:
             stmt = delete(Detection).where(Detection.timestamp < cutoff)
             result = await s.execute(stmt)
