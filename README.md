@@ -1,5 +1,6 @@
-# anpr — Automatic Number Plate Recognition
+# anpr-pipeline — Automatic Number Plate Recognition
 
+[![PyPI](https://img.shields.io/pypi/v/anpr-pipeline.svg)](https://pypi.org/project/anpr-pipeline/)
 [![CI](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/actions/workflows/ci.yml/badge.svg)](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%E2%80%933.13-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -13,7 +14,16 @@ End-to-end license plate recognition: **plate detection → tracking → OCR →
 
 ## Quickstart
 
-### Docker (recommended)
+### Via PyPI
+
+```bash
+pip install anpr-pipeline
+export ANPR_PLATE_HMAC_PEPPER="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+anpr serve                          # FastAPI on http://localhost:8000
+anpr infer path/to/plate.jpg        # one-shot CLI
+```
+
+### Docker
 
 ```bash
 export ANPR_PLATE_HMAC_PEPPER="$(python -c 'import secrets; print(secrets.token_hex(32))')"
@@ -22,7 +32,7 @@ docker compose up --build
 
 Open <http://localhost:8000>.
 
-### Native, via `uv`
+### From source, via `uv`
 
 ```bash
 git clone https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR.git
