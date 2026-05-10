@@ -25,11 +25,11 @@ class _MockReader:
         self._text = text
         self._confidence = confidence
 
-    def read(self, crop: np.ndarray) -> OcrResult | None:
+    def read(self, plate_crop: np.ndarray) -> OcrResult | None:
         return OcrResult(text=self._text, confidence=self._confidence)
 
-    def read_batch(self, crops: list[np.ndarray]) -> list[OcrResult | None]:
-        return [self.read(c) for c in crops]
+    def read_batch(self, plate_crops: list[np.ndarray]) -> list[OcrResult | None]:
+        return [self.read(c) for c in plate_crops]
 
 
 def test_infer_image_with_valid_plate() -> None:

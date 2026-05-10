@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 
 from anpr.detector.base import BBox, Detection
@@ -39,7 +41,9 @@ class FastAlprDetector:
         return [_to_detection(r, w, h) for r in raw]
 
 
-def _to_detection(raw: object, max_w: int, max_h: int) -> Detection:
+def _to_detection(raw: Any, max_w: int, max_h: int) -> Detection:
+    # `raw` is fast-alpr's DetectionResult-ish dataclass; the attribute names
+    # have flipped between releases (bounding_box vs bbox, confidence vs score).
     bbox_obj = getattr(raw, "bounding_box", None) or raw.bbox
     confidence = getattr(raw, "confidence", None)
     if confidence is None:

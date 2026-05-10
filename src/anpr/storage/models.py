@@ -16,7 +16,7 @@ def _utc_now() -> datetime:
 
 
 class Detection(SQLModel, table=True):
-    __tablename__ = "detections"
+    __tablename__ = "detections"  # type: ignore[assignment]  # SQLModel typing of declared_attr
 
     id: int | None = Field(default=None, primary_key=True)
     timestamp: datetime = Field(default_factory=_utc_now, index=True)
