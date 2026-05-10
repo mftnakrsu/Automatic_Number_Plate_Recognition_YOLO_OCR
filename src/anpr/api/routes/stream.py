@@ -23,6 +23,7 @@ from anpr.api.deps import app_settings, get_detector, get_reader, get_repo
 from anpr.config import Settings
 from anpr.detector.base import Detector
 from anpr.logging import get_logger
+from anpr.observability import ACTIVE_STREAMS, CONFIRMED_PLATES, DETECTIONS
 from anpr.ocr.base import PlateReader
 from anpr.pipeline import Pipeline
 from anpr.storage.hashing import hash_plate
@@ -42,6 +43,7 @@ async def stream_ws(
     repo: Annotated[DetectionRepository, Depends(get_repo)],
 ) -> None:
     await websocket.accept()
+    ACTIVE_STREAMS.inc()
     log.info("stream.connect")
 
     queue: asyncio.Queue[np.ndarray | None] = asyncio.Queue(maxsize=4)
@@ -104,11 +106,19 @@ async def stream_ws(
             }
             await websocket.send_json(payload)
 
+            DETECTIONS.labels(
+                route="stream",
+                parsed="valid" if event.plate.parsed else "invalid",
+            ).inc()
+
             if (
                 event.confirmed is not None
                 and event.plate.parsed is not None
                 and event.track_id not in persisted_track_ids
             ):
+                CONFIRMED_PLATES.labels(
+                    province_code=event.plate.parsed.province_code
+                ).inc()
                 await repo.save(
                     Detection(
                         track_id=event.track_id,
@@ -139,4 +149,5 @@ async def stream_ws(
             await prod_task
         except (asyncio.CancelledError, Exception):
             pass
+        ACTIVE_STREAMS.dec()
         log.info("stream.disconnect")

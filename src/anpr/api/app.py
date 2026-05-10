@@ -7,7 +7,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -15,10 +15,11 @@ from fastapi.templating import Jinja2Templates
 
 from anpr import __version__
 from anpr.api.deps import set_detector, set_reader, set_repo
-from anpr.api.middleware import RequestContextMiddleware
+from anpr.api.middleware import MetricsMiddleware, RequestContextMiddleware
 from anpr.api.routes import detections, health, infer, stream
 from anpr.config import get_settings
 from anpr.logging import configure_logging, get_logger
+from anpr.observability import configure_otel, render_metrics
 
 _HERE = Path(__file__).parent
 _TEMPLATES = Jinja2Templates(directory=str(_HERE / "templates"))
@@ -88,6 +89,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.add_middleware(RequestContextMiddleware)
+    app.add_middleware(MetricsMiddleware)
 
     app.include_router(health.router)
     app.include_router(infer.router)
@@ -99,5 +101,12 @@ def create_app() -> FastAPI:
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     async def index(request: Request) -> HTMLResponse:
         return _TEMPLATES.TemplateResponse(request, "index.html")
+
+    @app.get("/metrics", include_in_schema=False)
+    async def metrics_endpoint() -> Response:
+        body, content_type = render_metrics()
+        return Response(content=body, media_type=content_type)
+
+    configure_otel(app)
 
     return app
