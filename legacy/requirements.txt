@@ -7,7 +7,7 @@ opencv_python_headless==4.5.5.62
 Flask==1.1.2
 onnxruntime==1.10.0
 easyocr==1.4.1
-coremltools==5.2.0
+coremltools==9.0
 torchvision==0.9.1
 requests==2.25.1
 psutil==5.8.0
