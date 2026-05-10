@@ -1,0 +1,28 @@
+name: Feature request
+description: Suggest a new capability or enhancement.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem are you trying to solve? What's currently missing or painful?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check (KVKK / GDPR)
+      description: Plates are personal data; new features must respect the existing hash-only persistence model.
+      options:
+        - label: My proposal doesn't require persisting raw plate text.
