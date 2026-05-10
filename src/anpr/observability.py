@@ -77,14 +77,18 @@ def configure_otel(app: FastAPI) -> bool:
     if not endpoint:
         return False
     try:
-        from opentelemetry import trace
-        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (
+        from opentelemetry import trace  # pyright: ignore[reportMissingImports]
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import (  # pyright: ignore[reportMissingImports]
             OTLPSpanExporter,
         )
-        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
-        from opentelemetry.sdk.resources import Resource
-        from opentelemetry.sdk.trace import TracerProvider
-        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+        from opentelemetry.instrumentation.fastapi import (  # pyright: ignore[reportMissingImports]
+            FastAPIInstrumentor,
+        )
+        from opentelemetry.sdk.resources import Resource  # pyright: ignore[reportMissingImports]
+        from opentelemetry.sdk.trace import TracerProvider  # pyright: ignore[reportMissingImports]
+        from opentelemetry.sdk.trace.export import (  # pyright: ignore[reportMissingImports]
+            BatchSpanProcessor,
+        )
     except ImportError:
         return False
 
