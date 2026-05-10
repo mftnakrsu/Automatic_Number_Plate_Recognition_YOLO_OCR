@@ -28,12 +28,8 @@ log = get_logger(__name__)
 
 @app.callback()
 def _root(
-    log_level: Annotated[
-        str, typer.Option("--log-level", envvar="ANPR_LOG_LEVEL")
-    ] = "INFO",
-    log_json: Annotated[
-        bool, typer.Option("--log-json", envvar="ANPR_LOG_JSON")
-    ] = False,
+    log_level: Annotated[str, typer.Option("--log-level", envvar="ANPR_LOG_LEVEL")] = "INFO",
+    log_json: Annotated[bool, typer.Option("--log-json", envvar="ANPR_LOG_JSON")] = False,
 ) -> None:
     configure_logging(level=log_level, json=log_json)
 
@@ -63,9 +59,7 @@ def generate_pepper() -> None:
 @app.command()
 def infer(
     image: Annotated[Path, typer.Argument(help="Path to image file.")],
-    json_out: Annotated[
-        bool, typer.Option("--json", help="Emit JSON instead of a table.")
-    ] = False,
+    json_out: Annotated[bool, typer.Option("--json", help="Emit JSON instead of a table.")] = False,
 ) -> None:
     """Detect plates and OCR them in a single image."""
     if not image.exists():
@@ -137,9 +131,7 @@ def infer(
 def serve(
     host: Annotated[str, typer.Option(envvar="ANPR_API_HOST")] = "0.0.0.0",
     port: Annotated[int, typer.Option(envvar="ANPR_API_PORT")] = 8000,
-    reload: Annotated[
-        bool, typer.Option("--reload", help="Auto-reload on file changes.")
-    ] = False,
+    reload: Annotated[bool, typer.Option("--reload", help="Auto-reload on file changes.")] = False,
 ) -> None:
     """Start the FastAPI inference server."""
     import uvicorn

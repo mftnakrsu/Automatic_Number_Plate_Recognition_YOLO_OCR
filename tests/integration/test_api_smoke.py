@@ -44,7 +44,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
     deps_mod._READER = _MockReader()  # type: ignore[attr-defined]
 
     app = create_app()
-    yield TestClient(app)
+    return TestClient(app)
 
 
 def test_health(client: TestClient) -> None:

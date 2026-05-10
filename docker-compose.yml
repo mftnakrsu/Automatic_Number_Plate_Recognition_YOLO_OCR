@@ -1,0 +1,35 @@
+# Docker Compose for local / single-host deployment.
+#
+# Required env (put in .env next to this file):
+#   ANPR_PLATE_HMAC_PEPPER  64-hex-char secret used to hash plates before
+#                           persistence. Generate with:
+#                               python -c "import secrets; print(secrets.token_hex(32))"
+
+services:
+  anpr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: anpr:latest
+    container_name: anpr
+    ports:
+      - "${ANPR_API_PORT:-8000}:8000"
+    environment:
+      ANPR_PLATE_HMAC_PEPPER: ${ANPR_PLATE_HMAC_PEPPER:?ANPR_PLATE_HMAC_PEPPER required}
+      ANPR_LOG_LEVEL: ${ANPR_LOG_LEVEL:-INFO}
+      ANPR_LOG_JSON: ${ANPR_LOG_JSON:-true}
+      ANPR_RETENTION_HOURS: ${ANPR_RETENTION_HOURS:-720}
+      ANPR_DETECT_EVERY_N_FRAMES: ${ANPR_DETECT_EVERY_N_FRAMES:-3}
+      ANPR_MIN_TRACK_DWELL: ${ANPR_MIN_TRACK_DWELL:-5}
+    volumes:
+      - anpr-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  anpr-data:

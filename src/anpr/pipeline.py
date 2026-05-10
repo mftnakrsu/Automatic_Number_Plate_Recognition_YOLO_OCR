@@ -112,9 +112,7 @@ class Pipeline:
         self._voter = TemporalVoter(min_dwell=min_track_dwell)
         self._sr_min_w = sr_min_plate_width
 
-    async def process(
-        self, frames: AsyncIterator[np.ndarray]
-    ) -> AsyncIterator[StreamReadEvent]:
+    async def process(self, frames: AsyncIterator[np.ndarray]) -> AsyncIterator[StreamReadEvent]:
         loop = asyncio.get_running_loop()
         idx = 0
         async for frame in frames:
@@ -129,7 +127,7 @@ class Pipeline:
                 crop = det.bbox.crop(frame)
                 if crop.size == 0:
                     continue
-                if 0 < self._sr_min_w and crop.shape[1] < self._sr_min_w:
+                if self._sr_min_w > 0 and crop.shape[1] < self._sr_min_w:
                     pass  # super-resolution stub — wire Real-ESRGAN here if available
                 crop = dewarp(crop)
                 ocr = await loop.run_in_executor(None, self._reader.read, crop)

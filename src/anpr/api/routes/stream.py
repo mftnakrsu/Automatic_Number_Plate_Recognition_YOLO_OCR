@@ -12,6 +12,7 @@ persisted to the configured database (raw plate text is never stored — see
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from collections.abc import AsyncIterator
 from typing import Annotated, Any
 
@@ -59,10 +60,8 @@ async def stream_ws(
                 if frame is None:
                     continue
                 if queue.full():
-                    try:
+                    with contextlib.suppress(asyncio.QueueEmpty):
                         queue.get_nowait()
-                    except asyncio.QueueEmpty:
-                        pass
                 await queue.put(frame)
         except WebSocketDisconnect:
             await queue.put(None)
@@ -116,9 +115,7 @@ async def stream_ws(
                 and event.plate.parsed is not None
                 and event.track_id not in persisted_track_ids
             ):
-                CONFIRMED_PLATES.labels(
-                    province_code=event.plate.parsed.province_code
-                ).inc()
+                CONFIRMED_PLATES.labels(province_code=event.plate.parsed.province_code).inc()
                 await repo.save(
                     Detection(
                         track_id=event.track_id,
@@ -145,9 +142,7 @@ async def stream_ws(
         raise
     finally:
         prod_task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError, Exception):
             await prod_task
-        except (asyncio.CancelledError, Exception):
-            pass
         ACTIVE_STREAMS.dec()
         log.info("stream.disconnect")

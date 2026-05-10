@@ -9,7 +9,7 @@ this single trick lifts accuracy on low-resolution plates from ~31% to ~45%.
 from __future__ import annotations
 
 from collections import Counter, defaultdict, deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass(slots=True)

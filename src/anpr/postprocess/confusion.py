@@ -14,27 +14,31 @@ the letter-block length up front, so we enumerate the three valid splits
 from __future__ import annotations
 
 # In a "letter must be here" position, digits become the visually-closest letter.
-_DIGIT_TO_LETTER = str.maketrans({
-    "0": "O",
-    "1": "I",
-    "2": "Z",
-    "5": "S",
-    "6": "G",
-    "8": "B",
-})
+_DIGIT_TO_LETTER = str.maketrans(
+    {
+        "0": "O",
+        "1": "I",
+        "2": "Z",
+        "5": "S",
+        "6": "G",
+        "8": "B",
+    }
+)
 
 # In a "digit must be here" position, letters become the visually-closest digit.
-_LETTER_TO_DIGIT = str.maketrans({
-    "O": "0",
-    "Q": "0",
-    "D": "0",
-    "I": "1",
-    "L": "1",
-    "Z": "2",
-    "S": "5",
-    "G": "6",
-    "B": "8",
-})
+_LETTER_TO_DIGIT = str.maketrans(
+    {
+        "O": "0",
+        "Q": "0",
+        "D": "0",
+        "I": "1",
+        "L": "1",
+        "Z": "2",
+        "S": "5",
+        "G": "6",
+        "B": "8",
+    }
+)
 
 
 def correct_confusions(text: str) -> list[str]:

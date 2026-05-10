@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -62,10 +63,8 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         purge_task.cancel()
-        try:
+        with contextlib.suppress(asyncio.CancelledError, Exception):
             await purge_task
-        except (asyncio.CancelledError, Exception):
-            pass
         await engine.dispose()
         log.info("api.shutdown")
 
