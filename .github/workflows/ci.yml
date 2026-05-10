@@ -89,7 +89,7 @@ jobs:
       - name: Smoke /health
         run: |
           set +e
-          docker run --rm -d --name anpr-ci -p 8000:8000 \
+          docker run -d --name anpr-ci -p 8000:8000 \
             -e ANPR_PLATE_HMAC_PEPPER="$ANPR_PLATE_HMAC_PEPPER" \
             anpr:ci
 
