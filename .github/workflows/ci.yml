@@ -65,7 +65,7 @@ jobs:
             --cov-report=term-missing
       - name: Upload coverage
         if: matrix.python == '3.13'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: coverage.xml
           fail_ci_if_error: false
