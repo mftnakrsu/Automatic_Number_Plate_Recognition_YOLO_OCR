@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import time
 from typing import Annotated
 
 import cv2
@@ -14,6 +15,7 @@ from pydantic import BaseModel
 from anpr.api.deps import app_settings, get_detector, get_reader
 from anpr.config import Settings
 from anpr.detector.base import Detector
+from anpr.observability import DETECTIONS, INFERENCE_LATENCY
 from anpr.ocr.base import PlateReader
 from anpr.pipeline import infer_image
 
@@ -61,7 +63,13 @@ async def infer_endpoint(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"cannot decode image: {e}") from e
 
+    start = time.perf_counter()
     reads = infer_image(bgr, detector, reader)
+    INFERENCE_LATENCY.labels(route="infer").observe(time.perf_counter() - start)
+    for r in reads:
+        DETECTIONS.labels(
+            route="infer", parsed="valid" if r.parsed else "invalid"
+        ).inc()
     return [
         InferenceResult(
             bbox=BBoxOut(
