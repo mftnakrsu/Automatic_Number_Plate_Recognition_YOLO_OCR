@@ -23,5 +23,5 @@ keras_ocr==0.8.9
 pafy==0.5.5
 Pillow==9.3.0
 PyYAML==6.0
-tensorrt==0.0.1.dev5
+tensorrt==10.16.1.11
 
