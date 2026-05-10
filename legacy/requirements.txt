@@ -14,7 +14,7 @@ psutil==5.8.0
 numpy==1.22.0
 scipy==1.4.1
 tqdm==4.63.0
-openvino==2021.4.2
+openvino==2026.1.0
 pytesseract==0.3.9
 albumentations==1.1.0
 export==0.2.0
