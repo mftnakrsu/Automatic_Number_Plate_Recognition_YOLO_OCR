@@ -3,7 +3,7 @@
 # For GPU deployments swap the base of both stages to an `nvidia/cuda:12.x-cudnn-runtime`
 # variant and add `onnxruntime-gpu` via the `gpu` extras group.
 
-FROM python:3.13-slim AS builder
+FROM python:3.14-slim AS builder
 
 ENV UV_LINK_MODE=copy \
     UV_COMPILE_BYTECODE=1 \
@@ -30,7 +30,7 @@ COPY src/ ./src/
 RUN uv sync --no-dev --no-editable
 
 
-FROM python:3.13-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgl1 \
