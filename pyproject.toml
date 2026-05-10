@@ -31,6 +31,7 @@ dependencies = [
     "structlog>=24.4",
     "sqlmodel>=0.0.22",
     "aiosqlite>=0.20",
+    "greenlet>=3.0",
     "typer>=0.15",
     "opencv-python-headless>=4.10",
     "numpy>=2.1",
