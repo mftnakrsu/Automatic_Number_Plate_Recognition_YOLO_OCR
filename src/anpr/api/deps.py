@@ -1,9 +1,9 @@
 """Dependency-injected singletons for the API.
 
-Heavy resources (detector + OCR reader) are loaded once in the lifespan event
-and cached in module globals. FastAPI dependencies read from these globals so
-each request reuses the same instance — model files are huge, reloading per
-request is unacceptable.
+Heavy resources (detector, OCR reader, DB engine) are loaded once in the
+lifespan event and cached in module globals. FastAPI dependencies read from
+these globals so each request reuses the same instance — model files are
+huge, reloading per request is unacceptable.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ from anpr.config import Settings, get_settings
 if TYPE_CHECKING:
     from anpr.detector.base import Detector
     from anpr.ocr.base import PlateReader
+    from anpr.storage.repository import DetectionRepository
 
 
 @lru_cache(maxsize=1)
@@ -29,6 +30,7 @@ def app_settings() -> Settings:
 
 _DETECTOR: Detector | None = None
 _READER: PlateReader | None = None
+_REPO: DetectionRepository | None = None
 
 
 def set_detector(d: Detector) -> None:
@@ -51,3 +53,14 @@ def get_reader() -> PlateReader:
     if _READER is None:
         raise RuntimeError("Reader not initialized — lifespan event missing?")
     return _READER
+
+
+def set_repo(r: DetectionRepository) -> None:
+    global _REPO
+    _REPO = r
+
+
+def get_repo() -> DetectionRepository:
+    if _REPO is None:
+        raise RuntimeError("DetectionRepository not initialized — lifespan event missing?")
+    return _REPO

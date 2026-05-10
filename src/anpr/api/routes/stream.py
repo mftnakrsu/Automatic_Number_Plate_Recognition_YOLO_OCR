@@ -1,9 +1,12 @@
-"""WebSocket /ws/stream — receives binary JPEG frames, emits read events as JSON.
+"""WebSocket /ws/stream — receives binary JPEG frames, emits JSON read events.
 
-Producer/consumer pattern with a small bounded queue. The producer reads frames
-off the WebSocket; the consumer is the streaming `Pipeline`. Frames are dropped
-on queue overflow to keep latency bounded — by design, a slow consumer never
-backs up the network.
+Producer/consumer pattern with a small bounded queue. The producer reads
+frames off the WebSocket; the consumer is the streaming `Pipeline`. Frames
+are dropped on queue overflow to keep latency bounded.
+
+When a read is confirmed by the temporal voter the HMAC-hashed plate is
+persisted to the configured database (raw plate text is never stored — see
+`anpr.storage.hashing` for the KVKK/GDPR rationale).
 """
 
 from __future__ import annotations
@@ -16,12 +19,15 @@ import cv2
 import numpy as np
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
-from anpr.api.deps import app_settings, get_detector, get_reader
+from anpr.api.deps import app_settings, get_detector, get_reader, get_repo
 from anpr.config import Settings
 from anpr.detector.base import Detector
 from anpr.logging import get_logger
 from anpr.ocr.base import PlateReader
 from anpr.pipeline import Pipeline
+from anpr.storage.hashing import hash_plate
+from anpr.storage.models import Detection
+from anpr.storage.repository import DetectionRepository
 
 router = APIRouter()
 log = get_logger(__name__)
@@ -33,11 +39,14 @@ async def stream_ws(
     settings: Annotated[Settings, Depends(app_settings)],
     detector: Annotated[Detector, Depends(get_detector)],
     reader: Annotated[PlateReader, Depends(get_reader)],
+    repo: Annotated[DetectionRepository, Depends(get_repo)],
 ) -> None:
     await websocket.accept()
     log.info("stream.connect")
 
     queue: asyncio.Queue[np.ndarray | None] = asyncio.Queue(maxsize=4)
+    pepper = settings.plate_hmac_pepper.get_secret_value()
+    persisted_track_ids: set[int] = set()
 
     async def producer() -> None:
         try:
@@ -94,6 +103,31 @@ async def stream_ws(
                 "confirmed": event.confirmed,
             }
             await websocket.send_json(payload)
+
+            if (
+                event.confirmed is not None
+                and event.plate.parsed is not None
+                and event.track_id not in persisted_track_ids
+            ):
+                await repo.save(
+                    Detection(
+                        track_id=event.track_id,
+                        plate_hmac=hash_plate(event.confirmed, pepper),
+                        province_code=event.plate.parsed.province_code,
+                        confidence=event.plate.detection.confidence,
+                        bbox_x1=event.plate.detection.bbox.x1,
+                        bbox_y1=event.plate.detection.bbox.y1,
+                        bbox_x2=event.plate.detection.bbox.x2,
+                        bbox_y2=event.plate.detection.bbox.y2,
+                        confirmed=True,
+                    )
+                )
+                persisted_track_ids.add(event.track_id)
+                log.info(
+                    "stream.persisted",
+                    track_id=event.track_id,
+                    province=event.plate.parsed.province_code,
+                )
     except WebSocketDisconnect:
         log.info("stream.client_disconnect")
     except Exception:
