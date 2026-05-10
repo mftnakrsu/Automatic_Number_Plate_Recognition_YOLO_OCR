@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>anpr — Automatic Number Plate Recognition</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header>
+    <h1>anpr</h1>
+    <p>Automatic Number Plate Recognition</p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Upload an image</h2>
+      <form id="upload-form" enctype="multipart/form-data">
+        <input id="file-input" type="file" name="file" accept="image/*" required />
+        <button type="submit">Detect</button>
+      </form>
+      <div id="upload-result"></div>
+    </section>
+
+    <section class="card">
+      <h2>Live webcam</h2>
+      <video id="cam" autoplay muted playsinline></video>
+      <div class="controls">
+        <button id="cam-start">Start</button>
+        <button id="cam-stop" disabled>Stop</button>
+      </div>
+      <ul id="reads" class="reads" aria-live="polite"></ul>
+    </section>
+  </main>
+
+  <footer>
+    <small>
+      Plates are personal data under GDPR &amp; KVKK; only HMAC-hashed reads are
+      persisted by default.
+      <a href="/docs">/docs</a> · <a href="/health">/health</a> ·
+      <a href="/version">/version</a>
+    </small>
+  </footer>
+
+  <script>
+  (() => {
+    const form = document.getElementById('upload-form');
+    const out = document.getElementById('upload-result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      out.innerHTML = '<em>Detecting…</em>';
+      try {
+        const r = await fetch('/api/v1/infer', { method: 'POST', body: fd });
+        if (!r.ok) {
+          out.innerHTML = `<em class="err">Error: ${r.status} ${r.statusText}</em>`;
+          return;
+        }
+        const data = await r.json();
+        if (!data.length) {
+          out.innerHTML = '<em>No plates detected.</em>';
+          return;
+        }
+        out.innerHTML = data.map(d => `
+          <div class="read">
+            <strong>${d.parsed ? d.parsed.canonical : '(invalid)'}</strong>
+            <span>${d.parsed ? d.parsed.province_name : '—'}</span>
+            <span class="meta">det=${d.detection_confidence.toFixed(2)} ${d.raw_text ? `raw="${d.raw_text}"` : ''}</span>
+          </div>
+        `).join('');
+      } catch (err) {
+        out.innerHTML = `<em class="err">${err}</em>`;
+      }
+    });
+
+    const video = document.getElementById('cam');
+    const startBtn = document.getElementById('cam-start');
+    const stopBtn = document.getElementById('cam-stop');
+    const readsList = document.getElementById('reads');
+    let stream = null, ws = null, interval = null;
+
+    startBtn.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480 }
+        });
+      } catch (e) {
+        alert('Camera access denied or unavailable.');
+        return;
+      }
+      video.srcObject = stream;
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      ws = new WebSocket(`${proto}//${location.host}/ws/stream`);
+      ws.binaryType = 'arraybuffer';
+      ws.onmessage = (ev) => {
+        const data = JSON.parse(ev.data);
+        const li = document.createElement('li');
+        const tag = data.parsed ? data.parsed.canonical : (data.normalized_text || '(invalid)');
+        const badge = data.confirmed
+          ? `<span class="badge ok">CONFIRMED</span>`
+          : `<span class="badge">tentative</span>`;
+        li.innerHTML = `<strong>${tag}</strong> ${badge} <small>track ${data.track_id} · frame ${data.frame_idx}</small>`;
+        readsList.prepend(li);
+        while (readsList.children.length > 25) readsList.removeChild(readsList.lastChild);
+      };
+      ws.onerror = (e) => console.warn('ws error', e);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = 640; canvas.height = 480;
+      const ctx = canvas.getContext('2d');
+      interval = setInterval(() => {
+        if (ws.readyState !== WebSocket.OPEN) return;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob((blob) => {
+          if (blob && ws.readyState === WebSocket.OPEN) {
+            blob.arrayBuffer().then(buf => ws.send(buf));
+          }
+        }, 'image/jpeg', 0.8);
+      }, 100); // 10 fps
+
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+    });
+
+    stopBtn.addEventListener('click', () => {
+      if (interval) clearInterval(interval);
+      if (ws) ws.close();
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+  })();
+  </script>
+</body>
+</html>
