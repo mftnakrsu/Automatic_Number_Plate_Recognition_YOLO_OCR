@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "anpr-pipeline"
-version = "0.2.1"
+version = "0.2.2"
 description = "Automatic Number Plate Recognition — 2026 modernized pipeline (fast-alpr + FastAPI)"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"
@@ -62,6 +62,15 @@ Issues = "https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_O
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/anpr"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/anpr",
+    "README.md",
+    "LICENSE",
+    "KVKK_AYDINLATMA_METNI.md",
+    ".env.example",
+]
 
 [dependency-groups]
 dev = [
