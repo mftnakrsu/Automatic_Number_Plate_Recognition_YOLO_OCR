@@ -18,5 +18,5 @@ def dewarp(plate_crop: np.ndarray, *, target_height: int = 64) -> np.ndarray:
         return plate_crop
     if h == target_height:
         return plate_crop
-    target_w = max(1, int(round(w * target_height / h)))
+    target_w = max(1, round(w * target_height / h))
     return cv2.resize(plate_crop, (target_w, target_height), interpolation=cv2.INTER_CUBIC)

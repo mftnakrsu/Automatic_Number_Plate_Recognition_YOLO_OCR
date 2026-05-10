@@ -21,7 +21,6 @@ data/uploads
 .env.*
 imgs
 docs
-README.md
 .pre-commit-config.yaml
 .gitignore
 .dockerignore

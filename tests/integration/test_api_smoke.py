@@ -7,7 +7,6 @@ stubs the deps module's globals directly.
 from __future__ import annotations
 
 import io
-from collections.abc import Iterator
 
 import cv2
 import numpy as np
@@ -35,7 +34,7 @@ class _MockReader:
 
 
 @pytest.fixture
-def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
+def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
     monkeypatch.setenv("ANPR_PLATE_HMAC_PEPPER", "x" * 64)
     from anpr.api import deps as deps_mod
     from anpr.api.app import create_app
@@ -44,7 +43,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
     deps_mod._READER = _MockReader()  # type: ignore[attr-defined]
 
     app = create_app()
-    yield TestClient(app)
+    return TestClient(app)
 
 
 def test_health(client: TestClient) -> None:
