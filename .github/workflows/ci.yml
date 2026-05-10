@@ -88,16 +88,39 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Smoke /health
         run: |
+          set +e
           docker run --rm -d --name anpr-ci -p 8000:8000 \
             -e ANPR_PLATE_HMAC_PEPPER="$ANPR_PLATE_HMAC_PEPPER" \
             anpr:ci
-          for i in $(seq 1 30); do
-            if curl -fsS http://localhost:8000/health; then
-              echo " up after ${i}s"; break
+
+          ok=0
+          for i in $(seq 1 90); do
+            if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+              echo "Up after ${i}s"
+              ok=1
+              break
+            fi
+            if ! docker ps --filter name=anpr-ci --format '{{.Names}}' | grep -q anpr-ci; then
+              echo "Container died:"
+              docker logs anpr-ci 2>&1 | tail -100
+              exit 1
             fi
             sleep 1
           done
-          curl -fsS http://localhost:8000/health
-          curl -fsS http://localhost:8000/version
-          docker logs anpr-ci | tail -50
-          docker stop anpr-ci
+
+          echo "--- container logs ---"
+          docker logs anpr-ci 2>&1 | tail -100
+
+          if [ "$ok" -ne 1 ]; then
+            echo "ERROR: /health never responded"
+            docker stop anpr-ci >/dev/null 2>&1
+            exit 1
+          fi
+
+          echo "--- /health ---"
+          curl -fsS http://localhost:8000/health || exit 1
+          echo
+          echo "--- /version ---"
+          curl -fsS http://localhost:8000/version || exit 1
+          echo
+          docker stop anpr-ci >/dev/null 2>&1
