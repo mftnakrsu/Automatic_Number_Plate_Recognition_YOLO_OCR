@@ -1,8 +1,13 @@
-"""Smoke test the sync pipeline with mocks (no model files needed)."""
+"""Smoke test the sync pipeline with mock detector + reader.
+
+The real fast-alpr integration test lives behind a marker so CI without GPU/
+network skips it.
+"""
 
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from anpr.detector.base import BBox, Detection
 from anpr.ocr.base import OcrResult
@@ -27,24 +32,30 @@ class _MockReader:
         return [self.read(c) for c in crops]
 
 
-def test_infer_image_basic() -> None:
+def test_infer_image_with_valid_plate() -> None:
     img = np.zeros((480, 640, 3), dtype=np.uint8)
     reads = infer_image(img, _MockDetector(), _MockReader())
     assert len(reads) == 1
-    assert reads[0].ocr is not None
-    assert reads[0].normalized_text == "34ABC1234"
-    assert reads[0].detection.confidence == 0.9
+    r = reads[0]
+    assert r.detection.confidence == pytest.approx(0.9)
+    assert r.ocr is not None
+    assert r.parsed is not None
+    assert r.parsed.canonical == "34 ABC 1234"
+    assert r.parsed.province_name == "İstanbul"
 
 
-def test_infer_image_with_no_ocr() -> None:
-    class _NoneReader:
-        def read(self, c: np.ndarray) -> None:
-            return None
-
-        def read_batch(self, cs: list[np.ndarray]) -> list[None]:
-            return [None for _ in cs]
-
+def test_infer_image_corrects_ocr_confusion() -> None:
     img = np.zeros((480, 640, 3), dtype=np.uint8)
-    reads = infer_image(img, _MockDetector(), _NoneReader())
-    assert reads[0].normalized_text is None
-    assert reads[0].ocr is None
+    # OCR misread "06 ABC 1234" as "O6 ABC I234" — letter O for 0, I for 1
+    reader = _MockReader(text="O6 ABC I234", confidence=0.91)
+    reads = infer_image(img, _MockDetector(), reader)
+    assert reads[0].parsed is not None
+    assert reads[0].parsed.canonical == "06 ABC 1234"
+
+
+def test_infer_image_with_unparseable_ocr() -> None:
+    img = np.zeros((480, 640, 3), dtype=np.uint8)
+    reader = _MockReader(text="????????", confidence=0.5)
+    reads = infer_image(img, _MockDetector(), reader)
+    assert reads[0].parsed is None
+    assert reads[0].normalized_text == "????????"
