@@ -1,0 +1,53 @@
+version: 2
+
+# This config scopes Dependabot to the active codebase. The 2022 stack under
+# legacy/ is intentionally NOT monitored — it's an archived snapshot, not
+# something we maintain or run. Default-scan dependabot was previously opening
+# PRs against legacy/requirements.txt etc.; this explicit config supersedes
+# that behavior.
+
+updates:
+  # Production Python dependencies — pyproject.toml at repo root.
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      patch-and-minor:
+        update-types:
+          - "patch"
+          - "minor"
+
+  # GitHub Actions workflow versions (actions/checkout, setup-uv, etc.)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+
+  # Docker base image (python:3.13-slim).
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
