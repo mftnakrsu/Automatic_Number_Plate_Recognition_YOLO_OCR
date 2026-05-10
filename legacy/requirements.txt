@@ -1,7 +1,7 @@
 tensorflow==2.14.1
 matplotlib==3.5.1
 torch==1.13.1
-pandas==1.2.4
+pandas==3.0.2
 seaborn==0.11.1
 opencv_python_headless==4.5.5.62
 Flask==1.1.2
