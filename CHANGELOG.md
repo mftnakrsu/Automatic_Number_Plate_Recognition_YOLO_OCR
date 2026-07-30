@@ -4,6 +4,30 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.2.4] — 2026-07-31
+
+### Security
+
+- **Unbounded decoded-image size on the unauthenticated inference APIs**
+  (GHSA-r5v2-w3w2-4c8w, CWE-400, CVSS 3.1 7.5 High). `POST /api/v1/infer` and
+  `WS /ws/stream` decoded attacker-supplied images before bounding the decoded
+  raster; only the *compressed* payload was capped, via `max_upload_mb`. A
+  highly-compressible PNG under 1 MB decoded to hundreds of megabytes, and a
+  single unauthenticated WebSocket message was enough to OOM-kill a container
+  running on a 512 MB budget. Both paths now check the declared dimensions
+  from the image header — before any pixel data is materialised — against the
+  new `ANPR_MAX_IMAGE_PIXELS` budget, and `/ws/stream` additionally caps the
+  compressed frame at `ANPR_MAX_WS_FRAME_BYTES` both in the handler and at
+  uvicorn's `ws_max_size`. Reported by [@EQSTLab](https://github.com/EQSTLab).
+
+### Fixed
+
+- `/api/v1/infer` no longer echoes the raw decoder exception back to the
+  caller; the detail is logged server-side and the response is generic.
+- A failure in the `/ws/stream` producer other than a client disconnect left
+  the consumer awaiting a queue nobody would fill, leaking the connection and
+  its `ACTIVE_STREAMS` slot. The sentinel is now pushed from a `finally`.
+
 ## [0.2.3] — 2026-05-10
 
 ### Fixed

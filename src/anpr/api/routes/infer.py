@@ -2,24 +2,23 @@
 
 from __future__ import annotations
 
-import io
 import time
 from typing import Annotated
 
-import cv2
-import numpy as np
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from PIL import Image
 from pydantic import BaseModel
 
 from anpr.api.deps import app_settings, get_detector, get_reader
 from anpr.config import Settings
 from anpr.detector.base import Detector
+from anpr.imaging import ImageDecodeError, ImageTooLargeError, decode_upload
+from anpr.logging import get_logger
 from anpr.observability import DETECTIONS, INFERENCE_LATENCY
 from anpr.ocr.base import PlateReader
 from anpr.pipeline import infer_image
 
 router = APIRouter(prefix="/api/v1", tags=["inference"])
+log = get_logger(__name__)
 
 
 class BBoxOut(BaseModel):
@@ -58,10 +57,15 @@ async def infer_endpoint(
     if len(raw) > settings.max_upload_mb * 1024 * 1024:
         raise HTTPException(status_code=413, detail="upload too large")
     try:
-        pil_img = Image.open(io.BytesIO(raw)).convert("RGB")
-        bgr = cv2.cvtColor(np.asarray(pil_img), cv2.COLOR_RGB2BGR)
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"cannot decode image: {e}") from e
+        bgr = decode_upload(raw, max_pixels=settings.max_image_pixels)
+    except ImageTooLargeError as e:
+        # Detail is deliberately generic — the exception text names internal
+        # limits and is for the operator's log, not the caller.
+        log.warning("infer.image_rejected", reason=str(e))
+        raise HTTPException(status_code=413, detail="image too large") from e
+    except ImageDecodeError as e:
+        log.warning("infer.undecodable", reason=str(e))
+        raise HTTPException(status_code=400, detail="cannot decode image") from e
 
     start = time.perf_counter()
     reads = infer_image(bgr, detector, reader)

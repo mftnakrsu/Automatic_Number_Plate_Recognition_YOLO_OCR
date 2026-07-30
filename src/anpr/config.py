@@ -43,6 +43,14 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: PositiveInt = 8000
     max_upload_mb: PositiveInt = 10
+    # Decoded-raster ceiling for both /api/v1/infer and /ws/stream. The byte caps
+    # above do not bound this: a small compressed file can declare an enormous
+    # raster. 40 MP sits above 8K UHD (33.2 MP) and bounds one decode at ~120 MB
+    # RGB (~240 MB peak, counting the BGR copy).
+    max_image_pixels: PositiveInt = Field(default=40_000_000, ge=10_000)
+    # Per-frame compressed cap for /ws/stream, also passed to uvicorn's
+    # ws_max_size so the protocol layer rejects oversized frames first.
+    max_ws_frame_bytes: PositiveInt = Field(default=4 * 1024 * 1024, ge=1024)
     cors_origins: str = "*"
 
     @field_validator("plate_hmac_pepper")
