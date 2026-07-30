@@ -16,13 +16,13 @@ import contextlib
 from collections.abc import AsyncIterator
 from typing import Annotated, Any
 
-import cv2
 import numpy as np
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from anpr.api.deps import app_settings, get_detector, get_reader, get_repo
 from anpr.config import Settings
 from anpr.detector.base import Detector
+from anpr.imaging import ImageDecodeError, ImageTooLargeError, decode_frame
 from anpr.logging import get_logger
 from anpr.observability import ACTIVE_STREAMS, CONFIRMED_PLATES, DETECTIONS
 from anpr.ocr.base import PlateReader
@@ -33,6 +33,49 @@ from anpr.storage.repository import DetectionRepository
 
 router = APIRouter()
 log = get_logger(__name__)
+
+
+async def _producer(
+    websocket: WebSocket,
+    queue: asyncio.Queue[np.ndarray | None],
+    settings: Settings,
+) -> None:
+    """Read frames off the socket into `queue`, bounded by the decode limits.
+
+    Always terminates by pushing the `None` sentinel, so the consumer can
+    never be left awaiting a queue nobody will fill.
+    """
+    try:
+        while True:
+            blob = await websocket.receive_bytes()
+            try:
+                frame = decode_frame(
+                    blob,
+                    max_bytes=settings.max_ws_frame_bytes,
+                    max_pixels=settings.max_image_pixels,
+                )
+            except ImageTooLargeError as e:
+                # An oversized frame is an attack, not a glitch: one is enough
+                # to exhaust the worker, so drop the connection rather than
+                # let the peer keep trying.
+                log.warning("stream.frame_rejected", reason=str(e))
+                with contextlib.suppress(Exception):
+                    await websocket.close(code=1009, reason="frame too large")
+                return
+            except ImageDecodeError:
+                # Corrupt frame on a live feed — skip it, keep streaming.
+                continue
+            if queue.full():
+                with contextlib.suppress(asyncio.QueueEmpty):
+                    queue.get_nowait()
+            await queue.put(frame)
+    except WebSocketDisconnect:
+        log.info("stream.client_disconnect")
+    except Exception:
+        log.exception("stream.producer_error")
+    finally:
+        with contextlib.suppress(Exception):
+            await queue.put(None)
 
 
 @router.websocket("/ws/stream")
@@ -51,21 +94,6 @@ async def stream_ws(
     pepper = settings.plate_hmac_pepper.get_secret_value()
     persisted_track_ids: set[int] = set()
 
-    async def producer() -> None:
-        try:
-            while True:
-                blob = await websocket.receive_bytes()
-                arr = np.frombuffer(blob, dtype=np.uint8)
-                frame = cv2.imdecode(arr, cv2.IMREAD_COLOR)
-                if frame is None:
-                    continue
-                if queue.full():
-                    with contextlib.suppress(asyncio.QueueEmpty):
-                        queue.get_nowait()
-                await queue.put(frame)
-        except WebSocketDisconnect:
-            await queue.put(None)
-
     async def frames() -> AsyncIterator[np.ndarray]:
         while True:
             f = await queue.get()
@@ -81,7 +109,7 @@ async def stream_ws(
         sr_min_plate_width=settings.sr_min_plate_width,
     )
 
-    prod_task = asyncio.create_task(producer())
+    prod_task = asyncio.create_task(_producer(websocket, queue, settings))
 
     try:
         async for event in pipeline.process(frames()):
