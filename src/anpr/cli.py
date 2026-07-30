@@ -136,12 +136,17 @@ def serve(
     """Start the FastAPI inference server."""
     import uvicorn
 
+    settings = get_settings()
+
     uvicorn.run(
         "anpr.api.app:create_app",
         factory=True,
         host=host,
         port=port,
         reload=reload,
+        # Defence in depth: reject oversized frames at the protocol layer so
+        # they never reach the decoder. uvicorn's own default is 16 MB.
+        ws_max_size=settings.max_ws_frame_bytes,
     )
 
 

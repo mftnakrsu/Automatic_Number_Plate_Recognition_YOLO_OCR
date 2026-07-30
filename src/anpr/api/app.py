@@ -19,6 +19,7 @@ from anpr.api.deps import set_detector, set_reader, set_repo
 from anpr.api.middleware import MetricsMiddleware, RequestContextMiddleware
 from anpr.api.routes import detections, health, infer, stream
 from anpr.config import get_settings
+from anpr.imaging import configure_pillow_limits
 from anpr.logging import configure_logging, get_logger
 from anpr.observability import configure_otel, render_metrics
 
@@ -72,6 +73,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     settings = get_settings()
     configure_logging(level=settings.log_level, json=settings.log_json)
+    configure_pillow_limits(settings.max_image_pixels)
 
     app = FastAPI(
         title="anpr",
