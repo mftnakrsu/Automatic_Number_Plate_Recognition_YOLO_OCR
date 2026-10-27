@@ -2,7 +2,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/anpr-pipeline.svg)](https://pypi.org/project/anpr-pipeline/)
 [![CI](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/actions/workflows/ci.yml/badge.svg)](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/actions/workflows/ci.yml)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%E2%80%933.13-blue.svg)](pyproject.toml)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
