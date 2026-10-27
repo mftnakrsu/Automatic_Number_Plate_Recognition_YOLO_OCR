@@ -110,7 +110,7 @@ known plate was seen, compute its hash with the same pepper and compare it with 
 | Endpoint | Response |
 |---|---|
 | `GET /health` | `{"status": "ok"}` once the app is up. Use it as a liveness probe. |
-| `GET /version` | `{"version": "0.2.4"}` |
+| `GET /version` | `{"version": "0.2.5"}` |
 | `GET /metrics` | Prometheus metrics in text format. See [Monitoring](/operations/monitoring/). |
 | `GET /` | The web page with image upload and webcam streaming. |
 
