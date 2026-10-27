@@ -27,7 +27,7 @@ make test
 
 ## Pre-merge checks
 
-CI runs `ruff`, `pyright`, `pytest` on Python 3.11 / 3.12 / 3.13 + a Docker
+CI runs `ruff`, `pyright`, `pytest` on Python 3.11 / 3.12 / 3.13 / 3.14 + a Docker
 smoke test on every PR. To run the same checks locally:
 
 ```bash
