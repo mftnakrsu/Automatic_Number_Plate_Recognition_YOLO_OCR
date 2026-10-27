@@ -28,8 +28,7 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable
 from datetime import UTC, datetime
-from email.message import Message as HTTPMessage
-from typing import IO, Any
+from typing import Any
 
 from anpr import __version__
 from anpr.config import Settings
@@ -45,15 +44,7 @@ Sender = Callable[[str, bytes, dict[str, str], float], int]
 class _NoRedirect(urllib.request.HTTPRedirectHandler):
     """urllib would turn a redirected POST into a GET without the body; report the 3xx instead."""
 
-    def redirect_request(
-        self,
-        req: urllib.request.Request,
-        fp: IO[bytes],
-        code: int,
-        msg: str,
-        headers: HTTPMessage,
-        newurl: str,
-    ) -> urllib.request.Request | None:
+    def redirect_request(self, *args: Any, **kwargs: Any) -> None:
         return None
 
 
