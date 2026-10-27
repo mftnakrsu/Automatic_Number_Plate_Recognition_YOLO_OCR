@@ -25,6 +25,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Changed
 
+- Logs go to standard error instead of standard output, so `anpr infer --json`
+  and `anpr watch --json` stay valid JSON when something is logged mid-run.
 - Plate hashes ignore every character that isn't a letter or digit, so
   `34-ABC-1234` and `34 ABC 1234` hash the same. Stored hashes don't change:
   the plates that were hashed so far only ever had spaces.
