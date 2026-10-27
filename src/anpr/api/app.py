@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -80,9 +79,7 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     finally:
         for task in tasks:
             task.cancel()
-        for task in tasks:
-            with contextlib.suppress(asyncio.CancelledError, Exception):
-                await task
+        await asyncio.gather(*tasks, return_exceptions=True)
         if notifier is not None:
             await notifier.aclose()
         await engine.dispose()

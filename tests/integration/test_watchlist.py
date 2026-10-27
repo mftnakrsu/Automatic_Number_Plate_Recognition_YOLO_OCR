@@ -78,17 +78,21 @@ async def test_add_relabel_and_remove(repo: WatchlistRepository) -> None:
     assert entry is not None
     assert entry.label == "truck"
 
-    assert await reloaded.remove("a" * 64)
-    assert not await reloaded.remove("a" * 64)
+    removed = await reloaded.remove("a" * 64)
+    removed_again = await reloaded.remove("a" * 64)
+    assert removed
+    assert not removed_again
     assert reloaded.match("a" * 64) is None
-    assert [e.plate_hmac for e in await repo.list_all()] == ["b" * 64]
+    remaining = await repo.list_all()
+    assert [e.plate_hmac for e in remaining] == ["b" * 64]
 
 
 async def test_memory_only_watchlist() -> None:
     watchlist = Watchlist()
     await watchlist.add("c" * 64, None)
     assert watchlist.match("c" * 64) is not None
-    assert await watchlist.remove("c" * 64)
+    removed = await watchlist.remove("c" * 64)
+    assert removed
     assert len(watchlist) == 0
 
 
@@ -130,15 +134,20 @@ def test_routes_add_list_delete(client: TestClient) -> None:
     assert [(e["plate_hmac"], e["label"]) for e in listed] == [(plate_hmac, "van")]
     assert set(listed[0]) == {"plate_hmac", "label", "created_at"}
 
-    assert client.delete(f"/api/v1/watchlist/{plate_hmac}").status_code == 204
-    assert client.delete(f"/api/v1/watchlist/{plate_hmac}").status_code == 404
+    first = client.delete(f"/api/v1/watchlist/{plate_hmac}")
+    second = client.delete(f"/api/v1/watchlist/{plate_hmac}")
+    assert first.status_code == 204
+    assert second.status_code == 404
     assert client.get("/api/v1/watchlist").json() == []
 
 
 def test_route_rejects_bad_input(client: TestClient) -> None:
-    assert client.post("/api/v1/watchlist", json={"plate": " - "}).status_code == 422
-    assert client.post("/api/v1/watchlist", json={"plate": ""}).status_code == 422
-    assert client.delete("/api/v1/watchlist/not-a-hash").status_code == 422
+    responses = [
+        client.post("/api/v1/watchlist", json={"plate": " - "}),
+        client.post("/api/v1/watchlist", json={"plate": ""}),
+        client.delete("/api/v1/watchlist/not-a-hash"),
+    ]
+    assert [r.status_code for r in responses] == [422, 422, 422]
 
 
 def test_route_refuses_a_generated_pepper(deps: Any, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -148,7 +157,8 @@ def test_route_refuses_a_generated_pepper(deps: Any, monkeypatch: pytest.MonkeyP
     deps._settings_singleton.cache_clear()
     with pytest.warns(UserWarning, match="PEPPER"):
         client = TestClient(create_app())
-    assert client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234"}).status_code == 409
+    r = client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234"})
+    assert r.status_code == 409
 
 
 def _jpeg() -> bytes:
@@ -201,9 +211,9 @@ def cli_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
 
 
 def _run(*args: str) -> Any:
-    from anpr.cli import app
+    import anpr.cli as cli
 
-    return CliRunner().invoke(app, list(args))
+    return CliRunner().invoke(cli.app, list(args))
 
 
 def _listed() -> list[dict[str, Any]]:

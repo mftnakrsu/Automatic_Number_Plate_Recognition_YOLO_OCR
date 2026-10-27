@@ -92,6 +92,7 @@ async def _producer(
 @router.websocket("/ws/stream")
 async def stream_ws(
     websocket: WebSocket,
+    *,
     settings: Annotated[Settings, Depends(app_settings)],
     detector: Annotated[Detector, Depends(get_detector)],
     reader: Annotated[PlateReader, Depends(get_reader)],
