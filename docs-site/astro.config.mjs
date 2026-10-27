@@ -45,6 +45,7 @@ export default defineConfig({
             'guide/cli',
             'guide/http-api',
             'guide/websocket',
+            'guide/plate-formats',
             'guide/watchlist',
             'guide/configuration',
           ],

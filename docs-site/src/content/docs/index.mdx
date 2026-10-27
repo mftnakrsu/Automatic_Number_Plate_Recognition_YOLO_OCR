@@ -1,10 +1,10 @@
 ---
 title: Number plate recognition
-description: Open-source licence-plate recognition for Turkish plates. Detection, tracking, OCR, format checks and storage that never keeps the plate text, as a Python package, a CLI and a FastAPI service.
+description: Open-source licence-plate recognition for Turkish and European plates. Detection, tracking, OCR, format checks and storage that never keeps the plate text, as a Python package, a CLI and a FastAPI service.
 template: splash
 hero:
   title: Read number plates, keep no plate text
-  tagline: "anpr-pipeline finds a plate in an image or a video stream, reads it, checks it against the Turkish plate format and stores only a keyed hash of it. One pip install gives you a CLI and an HTTP and WebSocket service."
+  tagline: "anpr-pipeline finds a plate in an image or a video stream, reads it, checks it against the Turkish plate format (or six European ones) and stores only a keyed hash of it. One pip install gives you a CLI and an HTTP and WebSocket service."
   actions:
     - text: Install
       link: /start/install/
@@ -34,6 +34,7 @@ province codes:
   "raw_text": "34ABC1Z34",
   "normalized_text": "34ABC1234",
   "parsed": {
+    "country": "tr",
     "province_code": "34",
     "province_name": "İstanbul",
     "letters": "ABC",
@@ -57,9 +58,10 @@ settles it, and only then is it stored, as an HMAC-SHA256 hash.
     [fast-plate-ocr](https://github.com/ankandrew/fast-plate-ocr) reads the cropped plate and gives
     a confidence for every character. It can also run on CUDA or OpenVINO.
   </Card>
-  <Card title="Turkish plate rules" icon="approve-check">
-    All 81 province codes and the `NN L{1-3} N{2-4}` shape. Characters that look alike, such as
-    0 and O, 1 and I, or 8 and B, are fixed by position.
+  <Card title="Plate rules by country" icon="approve-check">
+    Türkiye's 81 province codes by default, and Germany, France, Italy, Spain, Belgium and
+    Portugal when you turn them on. Characters that look alike, such as 0 and O, 1 and I, or 8 and
+    B, are fixed by position. See [Plate formats](/guide/plate-formats/).
   </Card>
   <Card title="Tracking and voting" icon="list-format">
     An IoU tracker follows each plate across frames, and a majority vote per character position

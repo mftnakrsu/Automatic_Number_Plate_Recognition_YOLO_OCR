@@ -94,6 +94,7 @@ On a match anpr sends one `POST` with a JSON body:
   "source": "stream",
   "plate_hmac": "9f2c…e41a",
   "label": "delivery van",
+  "country": "tr",
   "province_code": "34",
   "track_id": 7,
   "frame_idx": 118,

@@ -20,7 +20,7 @@ scrape_configs:
 | `anpr_request_seconds` | histogram | method, path | Time to answer an HTTP request. |
 | `anpr_inference_seconds` | histogram | route | Time spent in detection and OCR on `POST /api/v1/infer`. |
 | `anpr_detections_total` | counter | route, parsed | Plates read; `parsed` is `valid` or `invalid`. |
-| `anpr_confirmed_plates_total` | counter | province_code | Plates confirmed on the stream, by province. |
+| `anpr_confirmed_plates_total` | counter | country, province_code | Plates confirmed on the stream, by country and, in Türkiye, province. `province_code` is empty elsewhere. The `country` label is new in 0.3.0. |
 | `anpr_active_websocket_streams` | gauge | | Open `/ws/stream` connections. |
 | `anpr_watchlist_matches_total` | counter | source | Confirmed plates found on the [watchlist](/guide/watchlist/); `source` is `stream` or `watch`. |
 | `anpr_webhook_deliveries_total` | counter | result | Webhook calls after retries; `result` is `ok` or `failed`. |

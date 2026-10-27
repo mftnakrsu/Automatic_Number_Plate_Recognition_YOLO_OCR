@@ -57,7 +57,7 @@ def client(monkeypatch: pytest.MonkeyPatch) -> TestClient:
 
 _INFER_KEYS = {"bbox", "detection_confidence", "raw_text", "normalized_text", "parsed"}
 _BBOX_KEYS = {"x1", "y1", "x2", "y2"}
-_PARSED_KEYS = {"province_code", "province_name", "letters", "digits", "canonical"}
+_PARSED_KEYS = {"country", "province_code", "province_name", "letters", "digits", "canonical"}
 
 
 def test_infer_response_key_contract(client: TestClient) -> None:

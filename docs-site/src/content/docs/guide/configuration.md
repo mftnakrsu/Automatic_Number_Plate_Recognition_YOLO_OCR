@@ -20,6 +20,7 @@ values in effect.
 
 | Variable | Default | Meaning |
 |---|---|---|
+| `ANPR_PLATE_FORMATS` | `tr` | Comma-separated country codes whose plate layouts are accepted, in order of preference: `tr`, `de`, `fr`, `it`, `es`, `be`, `pt`. See [Plate formats](/guide/plate-formats/). Since 0.3.0. |
 | `ANPR_DETECTOR_MODEL` | `yolo-v9-t-384-license-plate-end2end` | fast-alpr detector model name, or a path to your own ONNX file. |
 | `ANPR_DETECTOR_CONF_THRESHOLD` | `0.4` | Boxes the detector is less sure about than this are dropped. |
 | `ANPR_OCR_MODEL` | `cct-s-v2-global-model` | fast-plate-ocr model name. |

@@ -20,6 +20,7 @@ kez okunur, bir ayarı değiştirdikten sonra servisi yeniden başlatın. Geçer
 
 | Değişken | Varsayılan | Anlamı |
 |---|---|---|
+| `ANPR_PLATE_FORMATS` | `tr` | Plaka düzeni kabul edilen ülke kodları, virgülle ve tercih sırasıyla: `tr`, `de`, `fr`, `it`, `es`, `be`, `pt`. Bkz. [Plaka biçimleri](/tr/guide/plate-formats/). 0.3.0'dan beri. |
 | `ANPR_DETECTOR_MODEL` | `yolo-v9-t-384-license-plate-end2end` | fast-alpr dedektör modelinin adı ya da kendi ONNX dosyanızın yolu. |
 | `ANPR_DETECTOR_CONF_THRESHOLD` | `0.4` | Dedektörün bundan daha az emin olduğu kutular atılır. |
 | `ANPR_OCR_MODEL` | `cct-s-v2-global-model` | fast-plate-ocr modelinin adı. |

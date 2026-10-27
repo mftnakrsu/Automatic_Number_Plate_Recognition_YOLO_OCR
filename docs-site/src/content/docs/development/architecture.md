@@ -17,7 +17,7 @@ A stream (/ws/stream)
 ```
 
 A single image goes straight from detection to the format check. A stream adds frame skipping,
-tracking and the vote, and is the only path that writes to the database.
+tracking and the vote. It and `anpr watch --store` are the only paths that write to the database.
 
 ## Modules (`src/anpr/`)
 
@@ -27,6 +27,7 @@ tracking and the vote, and is the only path that writes to the database.
 | `ocr/` | The `PlateReader` protocol and its fast-plate-ocr implementation. Returns text and per-character confidences. |
 | `tracker/iou.py` | Greedy IoU tracker. Stable track IDs, expiry after 30 unseen frames. |
 | `postprocess/turkish.py` | The 81 province codes and the plate pattern. Turns `34ABC1234` into province, letters and digits. |
+| `postprocess/formats.py` | One `PlateFormat` per country (`ANPR_PLATE_FORMATS`) and `parse_plate`, which tries exact reads in every format before corrected ones. |
 | `postprocess/confusion.py` | When a reading doesn't fit, tries the three possible letter-block lengths and swaps look-alike characters to fit each. |
 | `postprocess/temporal.py` | Confidence-weighted, per-character majority vote over a track's best reads. |
 | `postprocess/dewarp.py` | On the stream, scales the crop to a fixed height. A placeholder for a real perspective correction. |

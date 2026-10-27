@@ -42,6 +42,7 @@ Yanıt, bulunan her plaka için bir öğe içeren bir listedir. Plaka yoksa boş
     "raw_text": "34ABC1Z34",
     "normalized_text": "34ABC1234",
     "parsed": {
+      "country": "tr",
       "province_code": "34",
       "province_name": "İstanbul",
       "letters": "ABC",
@@ -58,7 +59,7 @@ Yanıt, bulunan her plaka için bir öğe içeren bir listedir. Plaka yoksa boş
 | `detection_confidence` | Dedektörün ne kadar emin olduğu, 0 ile 1 arası. |
 | `raw_text` | OCR modelinin okuduğu metin. Hiçbir şey okuyamadıysa `null`. |
 | `normalized_text` | Boşlukları atılmış, büyük harfe çevrilmiş ve benzer karakterleri düzeltilmiş `raw_text`. |
-| `parsed` | Okumanın il, harf ve rakam olarak bölünmüş hâli. Geçerli bir Türk plakası değilse `null`. |
+| `parsed` | Okumanın ülke, il, harf ve rakam olarak bölünmüş hâli. `ANPR_PLATE_FORMATS` ile açılan [plaka biçimlerinden](/tr/guide/plate-formats/) hiçbirine uymuyorsa `null` (varsayılan yalnızca Türkiye). `province_code` ve `province_name` Türkiye dışında `null` olur. |
 
 Bu uç nokta hiçbir şey kaydetmez. Onaylanan plakaları yalnızca [WebSocket akışı](/tr/guide/websocket/)
 kaydeder.
@@ -95,6 +96,7 @@ curl "http://localhost:8000/api/v1/detections?limit=20&confirmed_only=true"
     "timestamp": "2026-10-27T09:41:12.503000",
     "track_id": 3,
     "plate_hmac": "9f2c…e41a",
+    "country": "tr",
     "province_code": "34",
     "confidence": 0.88,
     "bbox": [412, 388, 618, 436],

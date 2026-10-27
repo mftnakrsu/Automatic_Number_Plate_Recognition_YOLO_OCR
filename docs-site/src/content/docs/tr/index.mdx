@@ -1,10 +1,10 @@
 ---
 title: Plaka tanıma
-description: Türk plakaları için açık kaynak plaka tanıma. Algılama, takip, OCR, biçim denetimi ve plaka metnini hiç saklamayan kayıt; Python paketi, komut satırı aracı ve FastAPI servisi olarak.
+description: Türk ve Avrupa plakaları için açık kaynak plaka tanıma. Algılama, takip, OCR, biçim denetimi ve plaka metnini hiç saklamayan kayıt; Python paketi, komut satırı aracı ve FastAPI servisi olarak.
 template: splash
 hero:
   title: Plakayı oku, plaka metnini saklama
-  tagline: "anpr-pipeline bir fotoğrafta ya da video akışında plakayı bulur, okur, Türk plaka biçimine göre denetler ve yalnızca anahtarlı bir özetini kaydeder. Tek bir pip install ile hem komut satırı aracı hem HTTP ve WebSocket servisi gelir."
+  tagline: "anpr-pipeline bir fotoğrafta ya da video akışında plakayı bulur, okur, Türk plaka biçimine (ya da altı Avrupa biçiminden birine) göre denetler ve yalnızca anahtarlı bir özetini kaydeder. Tek bir pip install ile hem komut satırı aracı hem HTTP ve WebSocket servisi gelir."
   actions:
     - text: Kurulum
       link: /tr/start/install/
@@ -33,6 +33,7 @@ rakam olması gerektiğini bildiği için `Z`'yi `2` yapar. Sonuç 81 il koduna 
   "raw_text": "34ABC1Z34",
   "normalized_text": "34ABC1234",
   "parsed": {
+    "country": "tr",
     "province_code": "34",
     "province_name": "İstanbul",
     "letters": "ABC",
@@ -56,9 +57,10 @@ ancak ondan sonra ve HMAC-SHA256 özeti olarak kaydedilir.
     [fast-plate-ocr](https://github.com/ankandrew/fast-plate-ocr) kırpılmış plakayı okur ve her
     karakter için bir güven skoru verir. CUDA ya da OpenVINO ile de çalışabilir.
   </Card>
-  <Card title="Türk plaka kuralları" icon="approve-check">
-    81 il kodunun tamamı ve `NN H{1-3} R{2-4}` kalıbı. 0 ile O, 1 ile I, 8 ile B gibi birbirine
-    benzeyen karakterler konumlarına göre düzeltilir.
+  <Card title="Ülkelere göre plaka kuralları" icon="approve-check">
+    Varsayılan olarak Türkiye'nin 81 il kodu; açarsanız Almanya, Fransa, İtalya, İspanya, Belçika
+    ve Portekiz. 0 ile O, 1 ile I, 8 ile B gibi birbirine benzeyen karakterler konumlarına göre
+    düzeltilir. Bkz. [Plaka biçimleri](/tr/guide/plate-formats/).
   </Card>
   <Card title="Takip ve oylama" icon="list-format">
     Bir IoU takipçisi her plakayı kareden kareye izler, son okumaya karakter konumu başına çoğunluk

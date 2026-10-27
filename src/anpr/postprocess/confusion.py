@@ -1,4 +1,4 @@
-"""Position-aware OCR confusion-pair correction for Turkish plates.
+"""Position-aware OCR confusion-pair correction.
 
 OCR engines often confuse visually similar character pairs (0/O, 1/I/L, 5/S,
 8/B, 2/Z, 6/G, 0/D/Q). For Turkish plates the format pins which positions
@@ -8,7 +8,9 @@ must be digits vs letters:
 
 Knowing this lets us correct OCR confusions deterministically. We don't know
 the letter-block length up front, so we enumerate the three valid splits
-(1, 2, 3 letters) and emit a candidate for each.
+(1, 2, 3 letters) and emit a candidate for each. `shape_candidates` does the
+same for any layout spelled out as letter and digit positions, which is how
+the other countries in `anpr.postprocess.formats` use it.
 """
 
 from __future__ import annotations
@@ -40,6 +42,8 @@ _LETTER_TO_DIGIT = str.maketrans(
     }
 )
 
+_BY_KIND: dict[str, dict[int, str]] = {"L": _DIGIT_TO_LETTER, "D": _LETTER_TO_DIGIT, "*": {}}
+
 
 def correct_confusions(text: str) -> list[str]:
     """Return up to four candidate strings: original + 1/2/3-letter splits.
@@ -69,4 +73,22 @@ def correct_confusions(text: str) -> list[str]:
         if c not in seen:
             seen.add(c)
             out.append(c)
+    return out
+
+
+def shape_candidates(text: str, shapes: list[str]) -> list[str]:
+    """Return the cleaned text, then one candidate per shape of the same length.
+
+    A shape spells out each position: `L` must be a letter, `D` a digit, and
+    `*` is left alone. Separators are dropped first, so "AB-123-CD" is matched
+    against "LLDDDLL".
+    """
+    cleaned = "".join(c for c in text.upper() if c.isalnum())
+    out = [cleaned]
+    for shape in shapes:
+        if len(shape) != len(cleaned):
+            continue
+        fixed = "".join(c.translate(_BY_KIND[kind]) for c, kind in zip(cleaned, shape, strict=True))
+        if fixed not in out:
+            out.append(fixed)
     return out
