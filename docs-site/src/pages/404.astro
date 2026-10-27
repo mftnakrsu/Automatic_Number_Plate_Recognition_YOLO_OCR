@@ -1,0 +1,18 @@
+---
+// Replaces Starlight's built-in 404 route (disabled in astro.config.mjs) so the page can link home.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Page not found',
+    template: 'splash',
+    editUrl: false,
+    pagefind: false,
+    hero: {
+      title: 'Page not found',
+      tagline: 'This page doesn’t exist or has moved. Try the search, or start from the home page.',
+      actions: [{ text: 'Go to the start page', link: '/', icon: 'right-arrow' }],
+    },
+  }}
+/>

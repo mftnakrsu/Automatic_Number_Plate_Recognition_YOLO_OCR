@@ -6,6 +6,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Added
 
+- Documentation site at <https://anpr.mefby.com> in English and Turkish, built with
+  Astro Starlight from `docs-site/` and published to GitHub Pages.
 - Python 3.14 support (`requires-python` now `<3.15`, CI matrix includes 3.14).
   The optional `paddle` extra is skipped on 3.14 because `paddlepaddle` has no
   cp314 wheels yet; nothing in `src/` imports it.
