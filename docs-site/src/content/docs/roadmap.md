@@ -5,12 +5,13 @@ description: What anpr-pipeline can't do yet, and what is planned.
 
 ## Known limits
 
-These are honest gaps in the current version, 0.2.x.
+These are honest gaps in the current version, 0.3.x.
 
 - **One shared API key.** `ANPR_API_KEY` is a single key for every client; there are no users,
   roles or per-client keys.
-- **Turkish plates only.** The detector finds plates from many countries, but the reading is only
-  checked and corrected against the Turkish format. Other plates come back with `parsed: null`.
+- **Seven countries.** Readings are checked against Türkiye, Germany, France, Italy, Spain,
+  Belgium and Portugal ([Plate formats](/guide/plate-formats/)). Other plates come back with
+  `parsed: null`, and German plates aren't split into district and the rest.
 - **No perspective correction.** Plates seen at a steep angle aren't straightened before OCR; the
   stream only scales the crop to a fixed height.
 - **Two settings do nothing yet.** `ANPR_SR_MIN_PLATE_WIDTH` (super-resolution for small plates) and
@@ -20,8 +21,8 @@ These are honest gaps in the current version, 0.2.x.
 
 In rough order:
 
-1. **Plate formats for other countries**, starting with Germany and the rest of the EU, chosen with a
-   setting.
+1. **More countries**: the Netherlands, Poland and Austria next, and the German district list so
+   `MAB 1234` can be shown as `M-AB 1234`.
 
 Ideas and pull requests are welcome on
 [GitHub](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/issues).

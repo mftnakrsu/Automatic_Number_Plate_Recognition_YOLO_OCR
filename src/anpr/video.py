@@ -9,7 +9,7 @@ few times after a dropped connection; a file simply ends.
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Sequence
 from dataclasses import dataclass
 from typing import Protocol
 
@@ -20,7 +20,7 @@ from anpr.detector.base import Detector
 from anpr.logging import get_logger
 from anpr.ocr.base import PlateReader
 from anpr.pipeline import Pipeline
-from anpr.postprocess.turkish import parse_turkish_plate
+from anpr.postprocess.formats import DEFAULT_FORMATS, PlateFormat, parse_plate
 
 log = get_logger(__name__)
 
@@ -94,8 +94,9 @@ class ConfirmedPlate:
     frame_idx: int
     track_id: int
     plate: str
-    province_code: str
-    province_name: str
+    country: str
+    province_code: str | None
+    province_name: str | None
     confidence: float
     bbox: tuple[int, int, int, int]
 
@@ -108,6 +109,7 @@ async def watch(
     detect_every_n: int,
     min_track_dwell: int,
     sr_min_plate_width: int = 0,
+    formats: Sequence[PlateFormat] = DEFAULT_FORMATS,
 ) -> AsyncIterator[ConfirmedPlate]:
     """Run the streaming pipeline and yield each track's plate once, when confirmed."""
     pipeline = Pipeline(
@@ -116,12 +118,15 @@ async def watch(
         detect_every_n=detect_every_n,
         min_track_dwell=min_track_dwell,
         sr_min_plate_width=sr_min_plate_width,
+        formats=formats,
     )
     reported: set[int] = set()
     async for event in pipeline.process(frames):
         if event.confirmed is None or event.track_id in reported:
             continue
-        parsed = parse_turkish_plate(event.confirmed) or event.plate.parsed
+        # The vote runs per character, so re-check that the winner is still a valid plate.
+        result = parse_plate(event.confirmed, formats)
+        parsed = result[0] if result is not None else event.plate.parsed
         if parsed is None:
             continue
         reported.add(event.track_id)
@@ -129,6 +134,7 @@ async def watch(
             frame_idx=event.frame_idx,
             track_id=event.track_id,
             plate=parsed.canonical,
+            country=parsed.country,
             province_code=parsed.province_code,
             province_name=parsed.province_name,
             confidence=event.plate.detection.confidence,

@@ -94,6 +94,7 @@ Eşleşmede anpr JSON gövdeli tek bir `POST` gönderir:
   "source": "stream",
   "plate_hmac": "9f2c…e41a",
   "label": "dağıtım minibüsü",
+  "country": "tr",
   "province_code": "34",
   "track_id": 7,
   "frame_idx": 118,

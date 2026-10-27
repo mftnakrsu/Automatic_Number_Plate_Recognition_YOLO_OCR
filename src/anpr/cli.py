@@ -25,7 +25,9 @@ if TYPE_CHECKING:
 
     from anpr.detector.base import Detector
     from anpr.ocr.base import PlateReader
+    from anpr.postprocess.formats import ParsedPlate
     from anpr.storage.models import WatchlistEntry
+    from anpr.video import ConfirmedPlate
     from anpr.watchlist import Watchlist
 
 _T = TypeVar("_T")
@@ -54,6 +56,13 @@ def _build_models(settings: Settings) -> tuple[Detector, PlateReader]:
     )
     reader = FastPlateOcr(model_name=settings.ocr_model, device=settings.device)
     return detector, reader
+
+
+def _region(plate: ParsedPlate | ConfirmedPlate | None) -> str:
+    """The province for Turkish plates, the country code for the others."""
+    if plate is None:
+        return "—"
+    return plate.province_name or plate.country.upper()
 
 
 @app.callback()
@@ -111,7 +120,7 @@ def infer(
     detector, reader = _build_models(settings)
 
     log.info("inference.start", image=str(image))
-    reads = infer_image(image, detector, reader)
+    reads = infer_image(image, detector, reader, formats=settings.plate_format_list)
     log.info("inference.done", count=len(reads))
 
     if json_out:
@@ -123,6 +132,7 @@ def infer(
                 "normalized_text": r.normalized_text,
                 "parsed": (
                     {
+                        "country": r.parsed.country,
                         "province_code": r.parsed.province_code,
                         "province_name": r.parsed.province_name,
                         "letters": r.parsed.letters,
@@ -147,7 +157,7 @@ def infer(
     table.add_column("Det conf")
     table.add_column("Raw OCR")
     table.add_column("Plate")
-    table.add_column("Province")
+    table.add_column("Region")
     for r in reads:
         bb = r.detection.bbox
         table.add_row(
@@ -155,7 +165,7 @@ def infer(
             f"{r.detection.confidence:.2f}",
             r.raw_text or "—",
             r.parsed.canonical if r.parsed else "[red](invalid)[/red]",
-            r.parsed.province_name if r.parsed else "—",
+            _region(r.parsed),
         )
     console.print(table)
 
@@ -257,6 +267,7 @@ async def _watch(
             detect_every_n=settings.detect_every_n_frames,
             min_track_dwell=settings.min_track_dwell,
             sr_min_plate_width=settings.sr_min_plate_width,
+            formats=settings.plate_format_list,
         ):
             confirmed += 1
             plate_hmac = hash_plate(plate.plate, pepper)
@@ -267,6 +278,7 @@ async def _watch(
                 source="watch",
                 track_id=plate.track_id,
                 frame_idx=plate.frame_idx,
+                country=plate.country,
                 province_code=plate.province_code,
                 confidence=plate.confidence,
             )
@@ -280,7 +292,7 @@ async def _watch(
                     flag = "  [red]watchlist[/red]" + (f" {escape(hit.label)}" if hit.label else "")
                 console.print(
                     f"frame {plate.frame_idx:>6}  track {plate.track_id:>4}  "
-                    f"[bold]{plate.plate}[/bold]  {plate.province_name}  "
+                    f"[bold]{plate.plate}[/bold]  {_region(plate)}  "
                     f"det={plate.confidence:.2f}{flag}",
                     highlight=False,
                 )
@@ -290,6 +302,7 @@ async def _watch(
                     Detection(
                         track_id=plate.track_id,
                         plate_hmac=plate_hmac,
+                        country=plate.country,
                         province_code=plate.province_code,
                         confidence=plate.confidence,
                         bbox_x1=x1,

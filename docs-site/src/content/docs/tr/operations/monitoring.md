@@ -21,7 +21,7 @@ scrape_configs:
 | `anpr_request_seconds` | histogram | method, path | Bir HTTP isteğini yanıtlama süresi. |
 | `anpr_inference_seconds` | histogram | route | `POST /api/v1/infer` üzerinde algılama ve OCR'a harcanan süre. |
 | `anpr_detections_total` | counter | route, parsed | Okunan plakalar; `parsed` değeri `valid` ya da `invalid`. |
-| `anpr_confirmed_plates_total` | counter | province_code | Akışta onaylanan plakalar, ile göre. |
+| `anpr_confirmed_plates_total` | counter | country, province_code | Akışta onaylanan plakalar; ülkeye ve Türkiye'de ile göre. Diğer ülkelerde `province_code` boştur. `country` etiketi 0.3.0'da eklendi. |
 | `anpr_active_websocket_streams` | gauge | | Açık `/ws/stream` bağlantıları. |
 | `anpr_watchlist_matches_total` | counter | source | [İzleme listesinde](/tr/guide/watchlist/) bulunan onaylı plakalar; `source` değeri `stream` ya da `watch`. |
 | `anpr_webhook_deliveries_total` | counter | result | Yeniden denemelerden sonra webhook çağrıları; `result` değeri `ok` ya da `failed`. |

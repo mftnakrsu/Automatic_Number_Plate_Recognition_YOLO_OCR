@@ -25,8 +25,29 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
   changes the hash on every restart. New metrics:
   `anpr_watchlist_matches_total`, `anpr_webhook_deliveries_total`.
 
+- Plate formats for other countries, chosen with `ANPR_PLATE_FORMATS`
+  (comma-separated, in order of preference; default `tr`): Germany (`de`),
+  France (`fr`), Italy (`it`), Spain (`es`), Belgium (`be`) and Portugal
+  (`pt`). Each format checks the layout, writes the canonical form
+  (`AB-123-CD`, `1234 BCD`, ...) and fixes look-alike characters by position
+  through the new `shape_candidates`; an exact read in any format wins over a
+  corrected one. German plates come out as `MAB 1234`, without the district
+  split. `parsed` gains a `country` field everywhere (`/api/v1/infer`,
+  `/ws/stream`, `anpr infer --json`, `anpr watch --json`, the webhook), and
+  `province_code` / `province_name` are `null` outside Türkiye.
+- `detections.country` column, returned by `GET /api/v1/detections`. The
+  service adds it to databases made by 0.2.x on start-up; old rows stay
+  `null`.
+- `anpr_confirmed_plates_total` has a `country` label.
+
 ### Changed
 
+- `PlateRead.parsed` is a `ParsedPlate` (in `anpr.postprocess.formats`)
+  instead of a `TurkishPlate`; it has the same fields plus `country`, with
+  the province fields optional. `PlateRead.is_valid` is new;
+  `is_valid_turkish_plate` now means a valid plate *from Türkiye*.
+- `anpr infer` names its last column Region: the province for Turkish
+  plates, the country code for the others.
 - Logs go to standard error instead of standard output, so `anpr infer --json`
   and `anpr watch --json` stay valid JSON when something is logged mid-run.
 - Plate hashes ignore every character that isn't a letter or digit, so

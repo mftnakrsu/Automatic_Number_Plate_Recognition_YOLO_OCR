@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -16,10 +16,9 @@ import numpy as np
 
 from anpr.detector.base import Detection, Detector
 from anpr.ocr.base import OcrResult, PlateReader
-from anpr.postprocess.confusion import correct_confusions
 from anpr.postprocess.dewarp import dewarp
+from anpr.postprocess.formats import DEFAULT_FORMATS, ParsedPlate, PlateFormat, parse_plate
 from anpr.postprocess.temporal import TemporalVoter
-from anpr.postprocess.turkish import TurkishPlate, parse_turkish_plate
 from anpr.tracker.iou import IoUTracker
 
 
@@ -29,11 +28,16 @@ class PlateRead:
     ocr: OcrResult | None
     raw_text: str | None
     normalized_text: str | None
-    parsed: TurkishPlate | None
+    parsed: ParsedPlate | None
+
+    @property
+    def is_valid(self) -> bool:
+        """The read fits one of the enabled plate formats."""
+        return self.parsed is not None
 
     @property
     def is_valid_turkish_plate(self) -> bool:
-        return self.parsed is not None
+        return self.parsed is not None and self.parsed.country == "tr"
 
 
 @dataclass(slots=True, frozen=True)
@@ -53,17 +57,16 @@ def read_image(path: str | Path) -> np.ndarray:
     return img
 
 
-def _build_plate_read(det: Detection, ocr: OcrResult | None) -> PlateRead:
+def _build_plate_read(
+    det: Detection, ocr: OcrResult | None, formats: Sequence[PlateFormat]
+) -> PlateRead:
     if ocr is None:
         return PlateRead(det, None, None, None, None)
     normalized = "".join(ocr.text.split()).upper()
-    parsed = parse_turkish_plate(normalized)
-    if parsed is None:
-        for candidate in correct_confusions(normalized):
-            parsed = parse_turkish_plate(candidate)
-            if parsed is not None:
-                normalized = candidate
-                break
+    parsed: ParsedPlate | None = None
+    result = parse_plate(normalized, formats)
+    if result is not None:
+        parsed, normalized = result
     return PlateRead(
         detection=det,
         ocr=ocr,
@@ -77,14 +80,16 @@ def infer_image(
     image: np.ndarray | str | Path,
     detector: Detector,
     reader: PlateReader,
+    *,
+    formats: Sequence[PlateFormat] = DEFAULT_FORMATS,
 ) -> list[PlateRead]:
-    """Run detection + OCR + Turkish parse on a single image."""
+    """Run detection + OCR + plate-format parse on a single image."""
     if not isinstance(image, np.ndarray):
         image = read_image(image)
     detections = detector.detect(image)
     crops = [d.bbox.crop(image) for d in detections]
     ocr_results = reader.read_batch(crops)
-    return [_build_plate_read(d, o) for d, o in zip(detections, ocr_results, strict=True)]
+    return [_build_plate_read(d, o, formats) for d, o in zip(detections, ocr_results, strict=True)]
 
 
 class Pipeline:
@@ -102,6 +107,7 @@ class Pipeline:
         detect_every_n: int = 3,
         min_track_dwell: int = 5,
         sr_min_plate_width: int = 0,
+        formats: Sequence[PlateFormat] = DEFAULT_FORMATS,
     ) -> None:
         if detect_every_n < 1:
             raise ValueError("detect_every_n must be >= 1")
@@ -111,6 +117,7 @@ class Pipeline:
         self._tracker = IoUTracker()
         self._voter = TemporalVoter(min_dwell=min_track_dwell)
         self._sr_min_w = sr_min_plate_width
+        self._formats = formats
 
     async def process(self, frames: AsyncIterator[np.ndarray]) -> AsyncIterator[StreamReadEvent]:
         loop = asyncio.get_running_loop()
@@ -131,7 +138,7 @@ class Pipeline:
                     pass  # super-resolution stub — wire Real-ESRGAN here if available
                 crop = dewarp(crop)
                 ocr = await loop.run_in_executor(None, self._reader.read, crop)
-                plate = _build_plate_read(det, ocr)
+                plate = _build_plate_read(det, ocr, self._formats)
 
                 confirmed: str | None = None
                 if plate.parsed is not None and plate.ocr is not None:
