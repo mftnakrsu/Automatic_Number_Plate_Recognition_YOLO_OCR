@@ -3,7 +3,9 @@ title: WebSocket akışı
 description: /ws/stream adresine video kareleri gönderin, plaka okumalarını alın; takip ve kareler arası onay dahil.
 ---
 
-`/ws/stream` video içindir: web kamerası, bir kamera yayını ya da bir dosyadan okunan kareler. Siz
+`/ws/stream` video içindir: web kamerası, bir kamera yayını ya da bir dosyadan okunan kareler. Aynı
+makinedeki bir dosyayı ya da RTSP kamerayı okumak için [`anpr watch`](/tr/guide/cli/#anpr-watch-kaynak)
+aynı işi sunucusuz yapar. Siz
 kareleri gönderirsiniz, servis okuduklarını geri yollar. Her plakayı kareden kareye izler ve
 yeterince okununca onaylar.
 

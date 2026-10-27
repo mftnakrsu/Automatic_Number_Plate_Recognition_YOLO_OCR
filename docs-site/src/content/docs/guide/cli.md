@@ -26,6 +26,36 @@ Finds and reads the plates in one image file. Prints a table, or JSON with `--js
 
 It exits with code 2 if the file doesn't exist. Nothing is stored.
 
+## `anpr watch SOURCE`
+
+Reads plates from video: a file, a network stream or a camera. It runs the same frame skipping,
+tracking and vote as the [WebSocket stream](/guide/websocket/) and prints each plate once, when it
+is confirmed. Since 0.3.0.
+
+```bash
+anpr watch traffic.mp4
+anpr watch rtsp://user:pass@192.168.1.20:554/stream1
+anpr watch 0                       # the first local camera
+anpr watch traffic.mp4 --json      # one JSON object per line
+```
+
+```text
+frame     42  track    3  34 ABC 1234  İstanbul  det=0.91
+frame    118  track    7  06 AA 42  Ankara  det=0.88
+240 frames read, 2 plates confirmed.
+```
+
+| Option | Meaning |
+|---|---|
+| `--json` | Print one JSON object per confirmed plate: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox`. |
+| `--store` | Also save each confirmed plate to `ANPR_DATABASE_URL`, hashed like the stream does. Set `ANPR_PLATE_HMAC_PEPPER` first. |
+| `--max-frames N` | Stop after N frames. |
+| `--reconnect N` | For streams and cameras, how many times to reopen the source after it drops (default 5, two seconds apart). A file just ends. |
+
+`ANPR_DETECT_EVERY_N_FRAMES` and `ANPR_MIN_TRACK_DWELL` apply as on the stream. The summary line
+goes to standard error, so `--json` output can be piped as it is. `Ctrl+C` stops it. The command
+exits with code 2 if the source can't be opened.
+
 ## `anpr serve`
 
 Starts the HTTP and WebSocket service with uvicorn.

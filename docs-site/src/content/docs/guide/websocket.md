@@ -3,7 +3,9 @@ title: WebSocket stream
 description: Send video frames to /ws/stream and receive plate reads, with tracking and confirmation across frames.
 ---
 
-`/ws/stream` is for video: a webcam, a camera feed or frames from a file. You send frames, and the
+`/ws/stream` is for video: a webcam, a camera feed or frames from a file. To read a file or an
+RTSP camera on the same machine, [`anpr watch`](/guide/cli/#anpr-watch-source) does the same
+without a server. You send frames, and the
 service sends back what it read, following each plate from frame to frame and confirming it once it
 has been read often enough.
 
