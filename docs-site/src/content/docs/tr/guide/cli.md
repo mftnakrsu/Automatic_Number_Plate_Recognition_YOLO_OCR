@@ -47,7 +47,7 @@ frame    118  track    7  06 AA 42  Ankara  det=0.88
 
 | Seçenek | Anlamı |
 |---|---|
-| `--json` | Onaylanan her plaka için bir JSON nesnesi basar: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox`. |
+| `--json` | Onaylanan her plaka için bir JSON nesnesi basar: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox` ve `watchlist` ([izleme listesiyle](/tr/guide/watchlist/) eşleşmede `{"label": ...}`, yoksa `null`). |
 | `--store` | Onaylanan her plakayı, akışın yaptığı gibi özetleyerek `ANPR_DATABASE_URL` adresine de kaydeder. Önce `ANPR_PLATE_HMAC_PEPPER` ayarlayın. |
 | `--max-frames N` | N kareden sonra durur. |
 | `--reconnect N` | Yayın ve kameralarda bağlantı kopunca kaynağın kaç kez yeniden açılacağı (varsayılan 5, iki saniye arayla). Dosya ise biter. |
@@ -55,6 +55,14 @@ frame    118  track    7  06 AA 42  Ankara  det=0.88
 `ANPR_DETECT_EVERY_N_FRAMES` ve `ANPR_MIN_TRACK_DWELL` akıştaki gibi geçerlidir. Özet satırı
 standart hataya yazılır, böylece `--json` çıktısı olduğu gibi başka bir komuta aktarılabilir.
 `Ctrl+C` durdurur. Kaynak açılamazsa komut 2 koduyla çıkar.
+
+`ANPR_WEBHOOK_URL` ayarlıyken ya da `--store` ile onaylanan plakalar
+[izleme listesinde](/tr/guide/watchlist/) de aranır; eşleşme webhook'u çağırır.
+
+## `anpr watchlist`
+
+Uyarı verecek plakaları yönetir: `add`, `import`, `remove` ve `list`. Bkz.
+[İzleme listesi ve webhook](/tr/guide/watchlist/#komutlar). 0.3.0'dan beri.
 
 ## `anpr serve`
 
@@ -77,7 +85,7 @@ HTTP ve WebSocket servisini uvicorn ile başlatır.
 ## `anpr dump-config`
 
 Ortam değişkenleri ve `.env` okunduktan sonra servisin kullanacağı ayarları JSON olarak basar.
-Pepper ve API anahtarı `***` olarak görünür.
+Pepper, API anahtarı, webhook adresi ve gizli değeri `***` olarak görünür.
 
 ## `anpr version`
 

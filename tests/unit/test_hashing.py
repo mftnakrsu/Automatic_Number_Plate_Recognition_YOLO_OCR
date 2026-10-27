@@ -17,6 +17,12 @@ def test_hash_normalizes_whitespace_and_case() -> None:
     assert h1 == h2 == h3
 
 
+def test_hash_ignores_separators() -> None:
+    pepper = "x" * 64
+    assert hash_plate("34-ABC-1234", pepper) == hash_plate("34 ABC 1234", pepper)
+    assert hash_plate("M·AB 123", pepper) == hash_plate("MAB123", pepper)
+
+
 def test_hash_differs_with_different_pepper() -> None:
     a = hash_plate("34ABC1234", "pepper-a")
     b = hash_plate("34ABC1234", "pepper-b")

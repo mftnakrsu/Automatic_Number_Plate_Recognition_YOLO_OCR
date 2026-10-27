@@ -19,13 +19,18 @@ When the [WebSocket stream](/guide/websocket/) confirms a plate, one row is writ
 | bounding box | `412, 388, 618, 436` |
 | `track_id`, `timestamp`, `confirmed` | |
 
-The plate text, the image and the frame are not stored. `POST /api/v1/infer` and the CLI store
-nothing at all.
+`anpr watch --store` writes the same row. The plate text, the image and the frame are not stored.
+`POST /api/v1/infer` and `anpr infer` store nothing at all.
+
+The [watchlist](/guide/watchlist/) is kept the same way: each plate you add is hashed on arrival,
+and only the hash and your label are written. Webhook calls carry the hash and the label, not the
+plate. The watchlist HTTP endpoints refuse to work without `ANPR_API_KEY`: they hash any plate sent
+to them, so on an open API they would let anyone check whether a plate was seen.
 
 ## How the hash works
 
-The plate is put in one form first (spaces removed, upper case), so `34 abc 1234` and `34ABC1234`
-give the same hash. It is then hashed with HMAC-SHA256, keyed with `ANPR_PLATE_HMAC_PEPPER`.
+The plate is put in one form first (only letters and digits kept, upper case), so `34 abc 1234`,
+`34-ABC-1234` and `34ABC1234` give the same hash. It is then hashed with HMAC-SHA256, keyed with `ANPR_PLATE_HMAC_PEPPER`.
 
 - **Matching still works.** The same plate with the same pepper always gives the same hash, so you
   can count visits or check a plate you already know.

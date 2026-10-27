@@ -64,6 +64,7 @@ uv run anpr infer tests/fixtures/sample_plate.jpg
 | **Temporal voting** | Per-character-position majority vote over top-K confidence-weighted reads per track |
 | **Web** | FastAPI 0.115 + uvicorn, REST + WebSocket, dark-theme HTMX UI |
 | **Storage** | SQLModel + aiosqlite default; HMAC-SHA256 plate hashing (no raw plate text ever stored) |
+| **Watchlist** | Plates to look for, kept as hashes; signed webhook call when one is confirmed |
 | **Observability** | structlog + Prometheus `/metrics` + opt-in OpenTelemetry (`otel` extras) |
 | **Packaging** | `uv` + `pyproject.toml`, `ruff` (lint + format), `pyright`, `pytest` (60+ tests) |
 
@@ -79,6 +80,7 @@ uv run anpr infer tests/fixtures/sample_plate.jpg
 | `/metrics` | GET | Prometheus text-format metrics |
 | `/api/v1/infer` | POST (multipart) | single-image inference |
 | `/api/v1/detections` | GET | recent persisted reads (HMAC-hashed) |
+| `/api/v1/watchlist` | GET / POST / DELETE | plates that trigger the webhook (stored as hashes) |
 | `/ws/stream` | WS | binary JPEG frames in → JSON read events out |
 
 Full OpenAPI at <http://localhost:8000/docs>.
@@ -125,6 +127,7 @@ All settings live under the `ANPR_` env prefix and can be overridden via `.env`.
 | `ANPR_API_KEY` | _(unset = open API)_ | When set, `/api/v1/*` and `/ws/stream` need it (`X-API-Key`, `Authorization: Bearer`, or WS subprotocol `anpr.key.<key>`). Generate with `anpr generate-api-key`. |
 | `ANPR_DATABASE_URL` | `sqlite+aiosqlite:///data/anpr.db` | Switch to `postgresql+asyncpg://...` for production. |
 | `ANPR_RETENTION_HOURS` | `720` (30d) | Background worker purges rows older than this. |
+| `ANPR_WEBHOOK_URL` | _(unset)_ | Watchlist matches are POSTed here; `ANPR_WEBHOOK_SECRET` signs them (`X-ANPR-Signature`). |
 | `ANPR_DETECT_EVERY_N_FRAMES` | `3` | Detect on every Nth frame; track between. |
 | `ANPR_MIN_TRACK_DWELL` | `5` | Frames a track must persist before the voter emits confirmed. |
 | `ANPR_DETECTOR_MODEL` | `yolo-v9-t-384-license-plate-end2end` | Pass a path to use a fine-tuned ONNX. |
@@ -173,12 +176,14 @@ src/anpr/
 │   ├── app.py
 │   ├── deps.py          lifespan-loaded singletons
 │   ├── middleware.py    request_id + Prometheus middleware
-│   └── routes/          health, infer, stream (WS), detections
+│   └── routes/          health, infer, stream (WS), detections, watchlist
 ├── detector/            Detector Protocol + fast-alpr adapter
 ├── ocr/                 PlateReader Protocol + fast-plate-ocr adapter
 ├── postprocess/         turkish, confusion, temporal, dewarp
 ├── storage/             SQLModel Detection + HMAC + repository + retention
 ├── tracker/             IoU greedy tracker
+├── watchlist.py         in-memory watchlist + match alerts
+├── webhook.py           signed, retried webhook calls
 ├── observability.py     Prometheus metrics + optional OTel
 ├── config.py            pydantic-settings
 ├── logging.py           structlog

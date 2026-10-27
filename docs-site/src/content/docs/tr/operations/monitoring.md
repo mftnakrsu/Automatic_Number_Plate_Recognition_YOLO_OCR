@@ -23,6 +23,8 @@ scrape_configs:
 | `anpr_detections_total` | counter | route, parsed | Okunan plakalar; `parsed` değeri `valid` ya da `invalid`. |
 | `anpr_confirmed_plates_total` | counter | province_code | Akışta onaylanan plakalar, ile göre. |
 | `anpr_active_websocket_streams` | gauge | | Açık `/ws/stream` bağlantıları. |
+| `anpr_watchlist_matches_total` | counter | source | [İzleme listesinde](/tr/guide/watchlist/) bulunan onaylı plakalar; `source` değeri `stream` ya da `watch`. |
+| `anpr_webhook_deliveries_total` | counter | result | Yeniden denemelerden sonra webhook çağrıları; `result` değeri `ok` ya da `failed`. |
 
 Bir panoya iki sayı koymaya değer: `anpr_detections_total` içinde `invalid` payı (kamera açısı ya
 da odak bozulunca yükselir) ve `anpr_inference_seconds` değerinin 95. yüzdeliği.

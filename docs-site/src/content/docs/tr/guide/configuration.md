@@ -43,6 +43,17 @@ kullanılmaz; süper çözünürlük ve ikinci bir OCR motoru için ayrılmışl
 | `ANPR_API_KEY` | ayarsız | Ayarlıysa `/api/v1/*` ve `/ws/stream` bu anahtarı ister. Harf, rakam, `-` ve `_` içeren en az 16 karakter; `anpr generate-api-key` bir tane üretir. Bkz. [HTTP API](/tr/guide/http-api/#api-anahtarı). 0.2.5'ten beri. |
 | `ANPR_CORS_ORIGINS` | `*` | API'yi tarayıcıdan çağırabilecek kaynaklar, virgülle ayrılmış. Canlı ortamda daraltın. |
 
+## İzleme listesi webhook'u
+
+Bkz. [İzleme listesi ve webhook](/tr/guide/watchlist/). 0.3.0'dan beri.
+
+| Değişken | Varsayılan | Anlamı |
+|---|---|---|
+| `ANPR_WEBHOOK_URL` | ayarsız | İzleme listesi eşleşmelerinin gönderildiği adres, `http://` ya da `https://`. Gizli değer sayılır, çünkü sohbet uygulamalarının webhook adresleri kendi anahtarlarını taşır. |
+| `ANPR_WEBHOOK_SECRET` | ayarsız | Her çağrıyı `X-ANPR-Signature` başlığında imzalar. Ayarlı değilse çağrılar imzasız gider. |
+| `ANPR_WEBHOOK_TIMEOUT_SECONDS` | `5` | Alıcının en çok kaç saniye bekleneceği, en fazla 60. |
+| `ANPR_WEBHOOK_COOLDOWN_SECONDS` | `60` | Aynı plaka en çok bu kadar saniyede bir bildirilir. `0` onaylanan her izi bildirir. |
+
 ## Günlükler ve izleme
 
 | Değişken | Varsayılan | Anlamı |

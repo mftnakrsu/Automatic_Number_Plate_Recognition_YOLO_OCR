@@ -22,6 +22,8 @@ scrape_configs:
 | `anpr_detections_total` | counter | route, parsed | Plates read; `parsed` is `valid` or `invalid`. |
 | `anpr_confirmed_plates_total` | counter | province_code | Plates confirmed on the stream, by province. |
 | `anpr_active_websocket_streams` | gauge | | Open `/ws/stream` connections. |
+| `anpr_watchlist_matches_total` | counter | source | Confirmed plates found on the [watchlist](/guide/watchlist/); `source` is `stream` or `watch`. |
+| `anpr_webhook_deliveries_total` | counter | result | Webhook calls after retries; `result` is `ok` or `failed`. |
 
 Two numbers are worth a dashboard panel: the share of `invalid` in `anpr_detections_total`, which rises
 when the camera angle or focus is off, and the 95th percentile of `anpr_inference_seconds`.
