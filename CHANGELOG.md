@@ -12,6 +12,9 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Changed
 
+- Dev dependency `httpx` → `httpx2`: Starlette 1.x deprecates plain `httpx`
+  for `TestClient`. On 3.13 it was only arriving transitively via the paddle
+  extra, which hid the warning.
 - CI: GitHub Actions bumped to their current majors (checkout v7, setup-uv v10.3.2 — it no longer publishes a floating major tag —
   codecov v7, build-push v7, setup-buildx v4, login v4, metadata v6, CodeQL v4,
   upload-artifact v7, download-artifact v8). Most of these are the Node 20 →
