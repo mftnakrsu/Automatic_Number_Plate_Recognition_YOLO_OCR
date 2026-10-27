@@ -4,6 +4,12 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- Python 3.14 support (`requires-python` now `<3.15`, CI matrix includes 3.14).
+  The optional `paddle` extra is skipped on 3.14 because `paddlepaddle` has no
+  cp314 wheels yet; nothing in `src/` imports it.
+
 ### Changed
 
 - CI: GitHub Actions bumped to their current majors (checkout v7, setup-uv v10.3.2 — it no longer publishes a floating major tag —
