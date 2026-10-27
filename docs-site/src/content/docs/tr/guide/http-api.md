@@ -119,7 +119,7 @@ yönetir. Bkz. [İzleme listesi ve webhook](/tr/guide/watchlist/#http-uçları).
 | Uç nokta | Yanıt |
 |---|---|
 | `GET /health` | Uygulama ayaktaysa `{"status": "ok"}`. Canlılık denetimi (liveness probe) için kullanın. |
-| `GET /version` | `{"version": "0.2.5"}` |
+| `GET /version` | `{"version": "0.3.0"}` |
 | `GET /metrics` | Prometheus metin biçiminde metrikler. Bkz. [İzleme](/tr/operations/monitoring/). |
 | `GET /` | Resim yükleme ve web kamerası akışı olan web sayfası. |
 

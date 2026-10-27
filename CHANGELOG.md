@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-27
+
 ### Added
 
 - `anpr watch SOURCE` reads plates from a video file, a network stream (RTSP, HTTP)
@@ -187,7 +189,8 @@ EasyOCR + Flask 1.1 pipeline. The original code is preserved verbatim under
 - [#17](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/pull/17) — F8 (Docker + CI matrix)
 - [#18](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/pull/18) — F9 (README + KVKK template)
 
-[Unreleased]: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/compare/v0.2.5...HEAD
+[Unreleased]: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/compare/v0.2.5...v0.3.0
 [0.2.5]: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/compare/v0.2.4...v0.2.5
 [0.2.4]: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/compare/v0.2.2...v0.2.3
