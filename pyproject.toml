@@ -87,7 +87,7 @@ dev = [
     "ruff>=0.7",
     "pyright>=1.1.385",
     "pre-commit>=4.0",
-    "httpx>=0.28",
+    "httpx2>=2.16",  # starlette.testclient deprecated plain httpx
 ]
 
 [tool.ruff]
