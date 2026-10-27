@@ -21,11 +21,11 @@ class _MockDetector:
 
 
 class _MockReader:
-    def read(self, crop: np.ndarray) -> OcrResult | None:
+    def read(self, plate_crop: np.ndarray) -> OcrResult | None:
         return OcrResult(text="34 ABC 1234", confidence=0.95)
 
-    def read_batch(self, crops: list[np.ndarray]) -> list[OcrResult | None]:
-        return [self.read(c) for c in crops]
+    def read_batch(self, plate_crops: list[np.ndarray]) -> list[OcrResult | None]:
+        return [self.read(c) for c in plate_crops]
 
 
 class _FakeCapture:
@@ -49,7 +49,7 @@ class _FakeCapture:
 
 
 def _write_video(path: Path, frames: int) -> Path:
-    writer = cv2.VideoWriter(str(path), cv2.VideoWriter_fourcc(*"MJPG"), 10.0, (64, 48))
+    writer = cv2.VideoWriter(str(path), cv2.VideoWriter.fourcc(*"MJPG"), 10.0, (64, 48))
     assert writer.isOpened()
     for i in range(frames):
         writer.write(np.full((48, 64, 3), i * 10 % 255, dtype=np.uint8))

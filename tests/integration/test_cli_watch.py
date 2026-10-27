@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 import cv2
@@ -33,7 +34,7 @@ class _MockReader:
 @pytest.fixture
 def video(tmp_path: Path) -> Path:
     path = tmp_path / "clip.avi"
-    writer = cv2.VideoWriter(str(path), cv2.VideoWriter_fourcc(*"MJPG"), 10.0, (320, 240))
+    writer = cv2.VideoWriter(str(path), cv2.VideoWriter.fourcc(*"MJPG"), 10.0, (320, 240))
     for _ in range(30):
         writer.write(np.zeros((240, 320, 3), dtype=np.uint8))
     writer.release()
@@ -77,7 +78,7 @@ def test_watch_store_keeps_only_the_hash(video: Path, tmp_path: Path) -> None:
 
     result = CliRunner().invoke(app, ["watch", str(video), "--store"])
     assert result.exit_code == 0, result.output
-    with sqlite3.connect(tmp_path / "anpr.db") as db:
+    with closing(sqlite3.connect(tmp_path / "anpr.db")) as db:
         rows = db.execute("SELECT plate_hmac, province_code, confirmed FROM detections").fetchall()
     assert len(rows) == 1
     plate_hmac, province, confirmed = rows[0]
