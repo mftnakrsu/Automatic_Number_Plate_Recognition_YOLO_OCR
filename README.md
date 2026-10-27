@@ -24,6 +24,7 @@ pip install anpr-pipeline
 export ANPR_PLATE_HMAC_PEPPER="$(python -c 'import secrets; print(secrets.token_hex(32))')"
 anpr serve                          # FastAPI on http://localhost:8000
 anpr infer path/to/plate.jpg        # one-shot CLI
+anpr watch rtsp://camera/stream     # video file, RTSP stream or camera index
 ```
 
 ### Docker
