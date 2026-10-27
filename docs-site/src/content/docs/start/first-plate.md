@@ -18,8 +18,8 @@ You get a table with one row per plate the detector found:
 | BBox | Where the plate is in the image, as `(x1,y1)-(x2,y2)` in pixels. |
 | Det conf | How sure the detector is that this is a plate, from 0 to 1. |
 | Raw OCR | The characters exactly as the OCR model read them. |
-| Plate | The reading after the Turkish format check, such as `34 ABC 1234`, or `(invalid)` if it doesn't fit the format. |
-| Province | The province the code belongs to, such as `İstanbul`. |
+| Plate | The reading after the format check, such as `34 ABC 1234`, or `(invalid)` if it doesn't fit. |
+| Region | The province for a Turkish plate, such as `İstanbul`, or the country code for the others (see [Plate formats](/guide/plate-formats/)). |
 
 Add `--json` to get the same result as JSON, for scripts:
 

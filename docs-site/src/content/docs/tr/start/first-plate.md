@@ -18,8 +18,8 @@ Dedektörün bulduğu her plaka için bir satırlık tablo çıkar:
 | BBox | Plakanın resimdeki yeri, piksel cinsinden `(x1,y1)-(x2,y2)`. |
 | Det conf | Dedektörün bunun plaka olduğundan ne kadar emin olduğu, 0 ile 1 arası. |
 | Raw OCR | OCR modelinin okuduğu karakterler, olduğu gibi. |
-| Plate | Türk plaka biçimi denetiminden sonraki okuma, örneğin `34 ABC 1234`. Biçime uymuyorsa `(invalid)`. |
-| Province | Kodun ait olduğu il, örneğin `İstanbul`. |
+| Plate | Biçim denetiminden sonraki okuma, örneğin `34 ABC 1234`. Biçime uymuyorsa `(invalid)`. |
+| Region | Türk plakasında ilin adı, örneğin `İstanbul`; diğer ülkelerde ülke kodu (bkz. [Plaka biçimleri](/tr/guide/plate-formats/)). |
 
 Aynı sonucu betiklerde kullanmak üzere JSON olarak almak için `--json` ekleyin:
 

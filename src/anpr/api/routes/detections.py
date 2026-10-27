@@ -20,6 +20,7 @@ class DetectionOut(BaseModel):
     timestamp: datetime
     track_id: int | None
     plate_hmac: str
+    country: str | None
     province_code: str | None
     confidence: float
     bbox: tuple[int, int, int, int]
@@ -39,6 +40,7 @@ async def list_detections(
             timestamp=row.timestamp,
             track_id=row.track_id,
             plate_hmac=row.plate_hmac,
+            country=row.country,
             province_code=row.province_code,
             confidence=row.confidence,
             bbox=(row.bbox_x1, row.bbox_y1, row.bbox_x2, row.bbox_y2),

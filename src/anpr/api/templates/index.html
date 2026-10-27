@@ -88,7 +88,7 @@
         out.innerHTML = data.map(d => `
           <div class="read">
             <strong>${d.parsed ? d.parsed.canonical : '(invalid)'}</strong>
-            <span>${d.parsed ? d.parsed.province_name : '—'}</span>
+            <span>${d.parsed ? (d.parsed.province_name || d.parsed.country.toUpperCase()) : '—'}</span>
             <span class="meta">det=${d.detection_confidence.toFixed(2)} ${d.raw_text ? `raw="${d.raw_text}"` : ''}</span>
           </div>
         `).join('');

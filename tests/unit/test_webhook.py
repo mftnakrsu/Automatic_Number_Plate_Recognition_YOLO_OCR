@@ -31,6 +31,7 @@ def _event(plate_hmac: str = "a" * 64) -> dict[str, Any]:
         source="watch",
         track_id=3,
         frame_idx=42,
+        country="tr",
         province_code="34",
         confidence=0.9,
     )

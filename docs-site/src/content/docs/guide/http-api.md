@@ -40,6 +40,7 @@ The response is a list with one entry per plate found, and an empty list if ther
     "raw_text": "34ABC1Z34",
     "normalized_text": "34ABC1234",
     "parsed": {
+      "country": "tr",
       "province_code": "34",
       "province_name": "İstanbul",
       "letters": "ABC",
@@ -56,7 +57,7 @@ The response is a list with one entry per plate found, and an empty list if ther
 | `detection_confidence` | How sure the detector is, from 0 to 1. |
 | `raw_text` | What the OCR model read. `null` if it read nothing. |
 | `normalized_text` | `raw_text` without spaces, in upper case, after fixing look-alike characters. |
-| `parsed` | The reading split into province, letters and digits. `null` if it isn't a valid Turkish plate. |
+| `parsed` | The reading split into country, province, letters and digits. `null` if it fits none of the [plate formats](/guide/plate-formats/) turned on with `ANPR_PLATE_FORMATS` (Turkish only by default). `province_code` and `province_name` are `null` outside Türkiye. |
 
 This endpoint doesn't store anything. Only the [WebSocket stream](/guide/websocket/) stores
 confirmed plates.
@@ -93,6 +94,7 @@ curl "http://localhost:8000/api/v1/detections?limit=20&confirmed_only=true"
     "timestamp": "2026-10-27T09:41:12.503000",
     "track_id": 3,
     "plate_hmac": "9f2c…e41a",
+    "country": "tr",
     "province_code": "34",
     "confidence": 0.88,
     "bbox": [412, 388, 618, 436],

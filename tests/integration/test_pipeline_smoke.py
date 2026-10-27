@@ -59,3 +59,31 @@ def test_infer_image_with_unparseable_ocr() -> None:
     reads = infer_image(img, _MockDetector(), reader)
     assert reads[0].parsed is None
     assert reads[0].normalized_text == "????????"
+
+
+def test_infer_image_with_other_country_formats() -> None:
+    from anpr.postprocess.formats import get_formats
+
+    img = np.zeros((480, 640, 3), dtype=np.uint8)
+    reader = _MockReader(text="GH456JK")
+    assert infer_image(img, _MockDetector(), reader)[0].parsed is None
+
+    reads = infer_image(img, _MockDetector(), reader, formats=get_formats(["tr", "fr"]))
+    parsed = reads[0].parsed
+    assert parsed is not None
+    assert parsed.country == "fr"
+    assert parsed.canonical == "GH-456-JK"
+    assert parsed.province_code is None
+    assert reads[0].is_valid
+    assert not reads[0].is_valid_turkish_plate
+
+
+def test_infer_image_fixes_lookalikes_for_the_enabled_country() -> None:
+    from anpr.postprocess.formats import get_formats
+
+    img = np.zeros((480, 640, 3), dtype=np.uint8)
+    reader = _MockReader(text="I2B4 BCD")  # 1284 BCD with I for 1 and B for 8
+    reads = infer_image(img, _MockDetector(), reader, formats=get_formats(["es"]))
+    assert reads[0].parsed is not None
+    assert reads[0].parsed.canonical == "1284 BCD"
+    assert reads[0].normalized_text == "1284BCD"

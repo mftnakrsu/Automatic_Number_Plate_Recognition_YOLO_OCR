@@ -67,6 +67,7 @@ def alert(
     source: str,
     track_id: int,
     frame_idx: int,
+    country: str,
     province_code: str | None,
     confidence: float,
 ) -> WatchlistEntry | None:
@@ -83,6 +84,7 @@ def alert(
                 source=source,
                 track_id=track_id,
                 frame_idx=frame_idx,
+                country=country,
                 province_code=province_code,
                 confidence=confidence,
             )
