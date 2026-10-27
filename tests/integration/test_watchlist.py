@@ -21,6 +21,8 @@ from anpr.storage.repository import WatchlistRepository, init_db
 from anpr.watchlist import Watchlist
 
 PEPPER = "w" * 64
+KEY = "watchlist-test-key_0123456789"
+AUTH = {"X-API-Key": KEY}
 
 
 class _MockDetector:
@@ -87,6 +89,13 @@ async def test_add_relabel_and_remove(repo: WatchlistRepository) -> None:
     assert [e.plate_hmac for e in remaining] == ["b" * 64]
 
 
+async def test_relabel_keeps_the_label_when_none_is_given(repo: WatchlistRepository) -> None:
+    watchlist = Watchlist(repo)
+    await watchlist.add("a" * 64, "van")
+    entry = await watchlist.add("a" * 64)
+    assert entry.label == "van"
+
+
 async def test_memory_only_watchlist() -> None:
     watchlist = Watchlist()
     await watchlist.add("c" * 64, None)
@@ -104,7 +113,7 @@ def deps(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
     monkeypatch.setenv("ANPR_PLATE_HMAC_PEPPER", PEPPER)
     monkeypatch.setenv("ANPR_DETECT_EVERY_N_FRAMES", "1")
     monkeypatch.setenv("ANPR_MIN_TRACK_DWELL", "3")
-    monkeypatch.delenv("ANPR_API_KEY", raising=False)
+    monkeypatch.setenv("ANPR_API_KEY", KEY)
     from anpr.api import deps as deps_mod
 
     deps_mod._settings_singleton.cache_clear()  # type: ignore[attr-defined]
@@ -121,7 +130,7 @@ def deps(monkeypatch: pytest.MonkeyPatch) -> Iterator[Any]:
 def client(deps: Any) -> TestClient:
     from anpr.api.app import create_app
 
-    return TestClient(create_app())
+    return TestClient(create_app(), headers=AUTH)
 
 
 def test_routes_add_list_delete(client: TestClient) -> None:
@@ -156,7 +165,7 @@ def test_route_refuses_a_generated_pepper(deps: Any, monkeypatch: pytest.MonkeyP
     monkeypatch.delenv("ANPR_PLATE_HMAC_PEPPER")
     deps._settings_singleton.cache_clear()
     with pytest.warns(UserWarning, match="PEPPER"):
-        client = TestClient(create_app())
+        client = TestClient(create_app(), headers=AUTH)
     r = client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234"})
     assert r.status_code == 409
 
@@ -167,9 +176,37 @@ def _jpeg() -> bytes:
     return buf.tobytes()
 
 
+def test_routes_need_an_api_key_to_be_configured(
+    deps: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from anpr.api.app import create_app
+
+    monkeypatch.delenv("ANPR_API_KEY")
+    deps._settings_singleton.cache_clear()
+    client = TestClient(create_app())
+    responses = [
+        client.get("/api/v1/watchlist"),
+        client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234"}),
+    ]
+    assert [r.status_code for r in responses] == [403, 403]
+
+
+def test_routes_check_the_key(deps: Any) -> None:
+    from anpr.api.app import create_app
+
+    r = TestClient(create_app()).get("/api/v1/watchlist")
+    assert r.status_code == 401
+
+
+def test_adding_again_without_a_label_keeps_it(client: TestClient) -> None:
+    client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234", "label": "van"})
+    client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234"})
+    assert [e["label"] for e in client.get("/api/v1/watchlist").json()] == ["van"]
+
+
 def test_stream_alerts_on_a_watched_plate(client: TestClient, deps: Any) -> None:
     client.post("/api/v1/watchlist", json={"plate": "34 ABC 1234", "label": "van"})
-    with client.websocket_connect("/ws/stream") as ws:
+    with client.websocket_connect("/ws/stream", headers=AUTH) as ws:
         events = []
         for _ in range(4):
             ws.send_bytes(_jpeg())
@@ -185,7 +222,7 @@ def test_stream_alerts_on_a_watched_plate(client: TestClient, deps: Any) -> None
 
 
 def test_stream_ignores_unwatched_plates(client: TestClient, deps: Any) -> None:
-    with client.websocket_connect("/ws/stream") as ws:
+    with client.websocket_connect("/ws/stream", headers=AUTH) as ws:
         for _ in range(4):
             ws.send_bytes(_jpeg())
             ws.receive_json()
@@ -246,6 +283,22 @@ def test_cli_import(cli_env: Path, tmp_path: Path) -> None:
     assert result.exit_code == 0, result.output
     labels = {e["plate_hmac"]: e["label"] for e in _listed()}
     assert labels == {hash_plate("34ABC1234", PEPPER): "van", hash_plate("06AA42", PEPPER): None}
+
+
+def test_cli_rejects_plates_without_letters_or_digits(cli_env: Path, tmp_path: Path) -> None:
+    assert _run("watchlist", "add", "---").exit_code == 2
+    file = tmp_path / "plates.txt"
+    file.write_text("--, nothing\n06 AA 42\n", encoding="utf-8")
+    result = _run("watchlist", "import", str(file))
+    assert result.exit_code == 0, result.output
+    assert len(_listed()) == 1
+
+
+def test_cli_list_shows_labels_verbatim(cli_env: Path) -> None:
+    _run("watchlist", "add", "34 ABC 1234", "--label", "[gate] [/x]")
+    result = _run("watchlist", "list")
+    assert result.exit_code == 0, result.output
+    assert "[gate] [/x]" in result.stdout
 
 
 def test_cli_add_needs_a_pepper(cli_env: Path, monkeypatch: pytest.MonkeyPatch) -> None:

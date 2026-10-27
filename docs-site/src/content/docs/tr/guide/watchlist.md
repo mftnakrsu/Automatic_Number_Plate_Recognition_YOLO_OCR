@@ -45,7 +45,7 @@ metin halinde kişisel veri olur.
 
 | Komut | Ne yapar |
 |---|---|
-| `anpr watchlist add PLAKA [--label METİN]` | Plaka ekler, listede varsa etiketini değiştirir. |
+| `anpr watchlist add PLAKA [--label METİN]` | Plaka ekler, listede varsa etiketini değiştirir. `--label` olmadan yeniden eklemek eski etiketi korur. |
 | `anpr watchlist import DOSYA` | Bir metin dosyasındaki bütün plakaları ekler: her satıra bir plaka, isterseniz `plaka,etiket`. Boş satırlar ve `#` ile başlayan satırlar atlanır. |
 | `anpr watchlist remove PLAKA` | Plakayı çıkarır. Plaka metnini ya da 64 karakterlik özetini alır. Plaka listede değilse 1 koduyla çıkar. |
 | `anpr watchlist list [--json]` | Özetleri, etiketleri ve her birinin ne zaman eklendiğini gösterir. |
@@ -58,8 +58,10 @@ metin halinde kişisel veri olur.
 
 ## HTTP uçları
 
-Aynı liste HTTP üzerinden. [API anahtarı](/tr/guide/http-api/#api-anahtarı) ayarlıysa anahtar
-ister.
+Aynı liste HTTP üzerinden. Bu uçlar yalnızca `ANPR_API_KEY` ayarlıyken çalışır ve her çağrıda
+[anahtarı](/tr/guide/http-api/#api-anahtarı) ister; anahtar ayarlı değilse `403` döner. Plaka
+eklemek ve listeyi görmek plakanın özetini gösterir. Açık bir API'de herkes bunu kullanarak
+istediği bir plakanın `/api/v1/detections` içinde olup olmadığına bakabilirdi.
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/watchlist \
@@ -78,7 +80,7 @@ curl -X POST http://localhost:8000/api/v1/watchlist \
 | Uç | Yanıt |
 |---|---|
 | `GET /api/v1/watchlist` | Bütün kayıtlar, en eskisi önce. |
-| `POST /api/v1/watchlist` | `201` ve yeni kayıt. Gövde: `plate` (zorunlu, en çok 32 karakter) ve `label` (isteğe bağlı, en çok 200). Listedeki bir plakayı yeniden göndermek etiketini günceller. Pepper ayarlı değilken `409`, `plate` içinde harf ya da rakam yoksa `422`. |
+| `POST /api/v1/watchlist` | `201` ve yeni kayıt. Gövde: `plate` (zorunlu, en çok 32 karakter) ve `label` (isteğe bağlı, en çok 200). Listedeki bir plakayı yeniden göndermek etiketini günceller; `label` verilmezse eski etiket kalır. Pepper ayarlı değilken `409`, `plate` içinde harf ya da rakam yoksa `422`. |
 | `DELETE /api/v1/watchlist/{plate_hmac}` | `204`, özet listede yoksa `404`. |
 
 ## Webhook çağrısı
@@ -104,8 +106,10 @@ hangi kaydın eşleştiğini etiket ve özet söyler.
 
 Çağrı arka planda yapılır, yavaş yanıt veren bir alıcı videoyu bekletmez. anpr yanıtı en çok
 `ANPR_WEBHOOK_TIMEOUT_SECONDS` saniye bekler ve her `2xx` yanıtı teslim edilmiş sayar. Ağ hatası,
-`429` ya da `5xx` alırsa önce bir, sonra iki saniye bekleyip yeniden dener, toplam üç deneme. Diğer
-`4xx` yanıtlarında yeniden denemez. Aynı plaka en çok `ANPR_WEBHOOK_COOLDOWN_SECONDS` saniyede bir
+`429` ya da `5xx` alırsa önce bir, sonra iki saniye bekleyip yeniden dener, toplam üç deneme.
+Yönlendirmeler (`3xx`) ve diğer `4xx` yanıtları başarısız sayılır, yeniden denenmez. Yönlendirme
+izlenmez; `ANPR_WEBHOOK_URL` değerine son adresi, `https://` ile birlikte yazın. Bütün denemeler
+başarısız olursa bekleme süresi kaldırılır ve plaka bir sonraki görülüşünde yeniden denenir. Aynı plaka en çok `ANPR_WEBHOOK_COOLDOWN_SECONDS` saniyede bir
 (varsayılan 60) bildirilir. Durup yeniden hareket eden bir araç çoğu zaman yeni bir iz olarak geri
 gelir.
 

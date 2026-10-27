@@ -45,7 +45,7 @@ clear text.
 
 | Command | What it does |
 |---|---|
-| `anpr watchlist add PLATE [--label TEXT]` | Adds a plate, or changes the label of one already listed. |
+| `anpr watchlist add PLATE [--label TEXT]` | Adds a plate, or changes the label of one already listed. Adding it again without `--label` keeps the old label. |
 | `anpr watchlist import FILE` | Adds every plate in a text file: one per line, optionally `plate,label`. Blank lines and lines starting with `#` are skipped. |
 | `anpr watchlist remove PLATE` | Removes a plate. Takes the plate text or its 64-character hash. Exits with code 1 if it wasn't listed. |
 | `anpr watchlist list [--json]` | Shows the hashes, labels and when each was added. |
@@ -58,7 +58,10 @@ clear text.
 
 ## HTTP endpoints
 
-The same list over HTTP. They need the [API key](/guide/http-api/#api-key) when one is set.
+The same list over HTTP. These endpoints only work when `ANPR_API_KEY` is set, and need the
+[key](/guide/http-api/#api-key) on every call; without it they answer `403`. Adding a plate and
+listing the watchlist shows its hash, and on an open API anyone could use that to check
+`/api/v1/detections` for a plate of their choosing.
 
 ```bash
 curl -X POST http://localhost:8000/api/v1/watchlist \
@@ -77,7 +80,7 @@ curl -X POST http://localhost:8000/api/v1/watchlist \
 | Endpoint | Answer |
 |---|---|
 | `GET /api/v1/watchlist` | Every entry, oldest first. |
-| `POST /api/v1/watchlist` | `201` and the new entry. Body: `plate` (required, up to 32 characters) and `label` (optional, up to 200). Posting a listed plate again updates its label. `409` while the pepper is unset, `422` if `plate` has no letters or digits. |
+| `POST /api/v1/watchlist` | `201` and the new entry. Body: `plate` (required, up to 32 characters) and `label` (optional, up to 200). Posting a listed plate again updates its label, or keeps it if `label` is left out. `409` while the pepper is unset, `422` if `plate` has no letters or digits. |
 | `DELETE /api/v1/watchlist/{plate_hmac}` | `204`, or `404` if the hash isn't listed. |
 
 ## The webhook call
@@ -103,8 +106,10 @@ body; the label and the hash tell you which entry matched.
 
 The call runs in the background, so a slow receiver doesn't hold up the video. anpr waits up to
 `ANPR_WEBHOOK_TIMEOUT_SECONDS` for an answer and treats any `2xx` as delivered. A network error, a
-`429` or a `5xx` is tried again after one and then two seconds, three attempts in all; other `4xx`
-answers are not retried. The same plate is announced at most once every
+`429` or a `5xx` is tried again after one and then two seconds, three attempts in all; redirects
+(`3xx`) and other `4xx` answers count as failures and are not retried. Redirects aren't followed,
+so point `ANPR_WEBHOOK_URL` at the final address, `https://` included. If every attempt fails, the
+cooldown is lifted and the next sighting of the plate tries again. The same plate is announced at most once every
 `ANPR_WEBHOOK_COOLDOWN_SECONDS` (60 by default), because a car that stops and moves on often comes
 back as a new track.
 

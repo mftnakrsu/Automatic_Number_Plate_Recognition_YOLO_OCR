@@ -24,7 +24,8 @@ When the [WebSocket stream](/guide/websocket/) confirms a plate, one row is writ
 
 The [watchlist](/guide/watchlist/) is kept the same way: each plate you add is hashed on arrival,
 and only the hash and your label are written. Webhook calls carry the hash and the label, not the
-plate.
+plate. The watchlist HTTP endpoints refuse to work without `ANPR_API_KEY`: they hash any plate sent
+to them, so on an open API they would let anyone check whether a plate was seen.
 
 ## How the hash works
 

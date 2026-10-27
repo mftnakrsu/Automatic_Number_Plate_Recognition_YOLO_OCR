@@ -165,6 +165,17 @@ async def stream_ws(
             ):
                 CONFIRMED_PLATES.labels(province_code=event.plate.parsed.province_code).inc()
                 plate_hmac = hash_plate(event.confirmed, pepper)
+                # Before the write, so a failed save can't swallow the alert.
+                alert(
+                    watchlist,
+                    notifier,
+                    plate_hmac,
+                    source="stream",
+                    track_id=event.track_id,
+                    frame_idx=event.frame_idx,
+                    province_code=event.plate.parsed.province_code,
+                    confidence=event.plate.detection.confidence,
+                )
                 await repo.save(
                     Detection(
                         track_id=event.track_id,
@@ -179,16 +190,6 @@ async def stream_ws(
                     )
                 )
                 persisted_track_ids.add(event.track_id)
-                alert(
-                    watchlist,
-                    notifier,
-                    plate_hmac,
-                    source="stream",
-                    track_id=event.track_id,
-                    frame_idx=event.frame_idx,
-                    province_code=event.plate.parsed.province_code,
-                    confidence=event.plate.detection.confidence,
-                )
                 log.info(
                     "stream.persisted",
                     track_id=event.track_id,

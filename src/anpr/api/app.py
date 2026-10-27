@@ -67,6 +67,11 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     notifier = notifier_from_settings(settings)
     set_notifier(notifier)
     log.info("api.watchlist", entries=len(watched), webhook=notifier is not None)
+    if settings.pepper_is_generated and len(watched):
+        log.warning(
+            "api.watchlist_unmatchable",
+            reason="ANPR_PLATE_HMAC_PEPPER is not set, so no plate can match the stored hashes",
+        )
 
     tasks = [
         asyncio.create_task(retention_worker(repo, retention_hours=settings.retention_hours)),
