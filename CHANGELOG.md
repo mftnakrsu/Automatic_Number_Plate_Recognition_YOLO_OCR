@@ -4,6 +4,14 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+
+- `anpr watch SOURCE` reads plates from a video file, a network stream (RTSP, HTTP)
+  or a camera index, with the same frame skipping, tracking and temporal vote as
+  `/ws/stream`. It prints each track's plate once when confirmed (`--json` for JSON
+  lines), can store hashed reads with `--store`, and reconnects live sources after a
+  drop (`--reconnect`, default 5 attempts).
+
 ## [0.2.5] — 2026-10-27
 
 ### Added
