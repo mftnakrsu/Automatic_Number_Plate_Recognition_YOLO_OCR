@@ -26,6 +26,36 @@ anlamı için bkz. [İlk plakanız](/tr/start/first-plate/).
 
 Dosya yoksa 2 koduyla çıkar. Hiçbir şey kaydetmez.
 
+## `anpr watch KAYNAK`
+
+Videodan plaka okur: bir dosyadan, bir ağ yayınından ya da bir kameradan.
+[WebSocket akışındaki](/tr/guide/websocket/) kare atlama, takip ve oylamanın aynısını çalıştırır ve
+her plakayı onaylandığında bir kez basar. 0.3.0'dan beri.
+
+```bash
+anpr watch trafik.mp4
+anpr watch rtsp://kullanici:parola@192.168.1.20:554/stream1
+anpr watch 0                       # ilk yerel kamera
+anpr watch trafik.mp4 --json       # her satıra bir JSON nesnesi
+```
+
+```text
+frame     42  track    3  34 ABC 1234  İstanbul  det=0.91
+frame    118  track    7  06 AA 42  Ankara  det=0.88
+240 frames read, 2 plates confirmed.
+```
+
+| Seçenek | Anlamı |
+|---|---|
+| `--json` | Onaylanan her plaka için bir JSON nesnesi basar: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox`. |
+| `--store` | Onaylanan her plakayı, akışın yaptığı gibi özetleyerek `ANPR_DATABASE_URL` adresine de kaydeder. Önce `ANPR_PLATE_HMAC_PEPPER` ayarlayın. |
+| `--max-frames N` | N kareden sonra durur. |
+| `--reconnect N` | Yayın ve kameralarda bağlantı kopunca kaynağın kaç kez yeniden açılacağı (varsayılan 5, iki saniye arayla). Dosya ise biter. |
+
+`ANPR_DETECT_EVERY_N_FRAMES` ve `ANPR_MIN_TRACK_DWELL` akıştaki gibi geçerlidir. Özet satırı
+standart hataya yazılır, böylece `--json` çıktısı olduğu gibi başka bir komuta aktarılabilir.
+`Ctrl+C` durdurur. Kaynak açılamazsa komut 2 koduyla çıkar.
+
 ## `anpr serve`
 
 HTTP ve WebSocket servisini uvicorn ile başlatır.
