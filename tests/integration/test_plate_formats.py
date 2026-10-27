@@ -6,7 +6,7 @@ import io
 import json
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import cv2
 import numpy as np
@@ -125,7 +125,7 @@ def test_stream_confirms_and_stores_a_german_plate(client: TestClient) -> None:
             events.append(ws.receive_json())
     assert events[2]["confirmed"] == "MAB 1234"
     assert events[2]["parsed"]["country"] == "de"
-    saved = deps_mod._REPO.saved
+    saved = cast(_MockRepo, deps_mod._REPO).saved
     assert len(saved) == 1
     assert saved[0].province_code is None
 
