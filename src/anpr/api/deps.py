@@ -12,11 +12,13 @@ from functools import lru_cache
 from typing import TYPE_CHECKING
 
 from anpr.config import Settings, get_settings
+from anpr.watchlist import Watchlist
 
 if TYPE_CHECKING:
     from anpr.detector.base import Detector
     from anpr.ocr.base import PlateReader
     from anpr.storage.repository import DetectionRepository
+    from anpr.webhook import WebhookNotifier
 
 
 @lru_cache(maxsize=1)
@@ -31,6 +33,9 @@ def app_settings() -> Settings:
 _DETECTOR: Detector | None = None
 _READER: PlateReader | None = None
 _REPO: DetectionRepository | None = None
+# Empty and in memory until the lifespan swaps in the database-backed one.
+_WATCHLIST = Watchlist()
+_NOTIFIER: WebhookNotifier | None = None
 
 
 def set_detector(d: Detector) -> None:
@@ -64,3 +69,22 @@ def get_repo() -> DetectionRepository:
     if _REPO is None:
         raise RuntimeError("DetectionRepository not initialized — lifespan event missing?")
     return _REPO
+
+
+def set_watchlist(w: Watchlist) -> None:
+    global _WATCHLIST
+    _WATCHLIST = w
+
+
+def get_watchlist() -> Watchlist:
+    return _WATCHLIST
+
+
+def set_notifier(n: WebhookNotifier | None) -> None:
+    global _NOTIFIER
+    _NOTIFIER = n
+
+
+def get_notifier() -> WebhookNotifier | None:
+    """The webhook sender, or None when `ANPR_WEBHOOK_URL` is unset."""
+    return _NOTIFIER

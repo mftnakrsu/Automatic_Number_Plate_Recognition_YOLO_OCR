@@ -11,6 +11,23 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
   `/ws/stream`. It prints each track's plate once when confirmed (`--json` for JSON
   lines), can store hashed reads with `--store`, and reconnects live sources after a
   drop (`--reconnect`, default 5 attempts).
+- Watchlist with webhooks. `anpr watchlist add|import|remove|list` and
+  `GET/POST/DELETE /api/v1/watchlist` manage the plates to look for; each is
+  stored only as its HMAC, in a new `watchlist` table. When `/ws/stream` or
+  `anpr watch` confirms a listed plate, the JSON event (hash, label, province,
+  track, confidence; never the plate text) is POSTed to `ANPR_WEBHOOK_URL` in
+  the background, signed with `ANPR_WEBHOOK_SECRET` as
+  `X-ANPR-Signature: sha256=HMAC("<timestamp>.<body>")`. Network errors, 429
+  and 5xx are retried twice; the same plate is announced at most once per
+  `ANPR_WEBHOOK_COOLDOWN_SECONDS`. Adding plates is refused while the pepper is
+  unset, because a generated pepper changes the hash on every restart. New
+  metrics: `anpr_watchlist_matches_total`, `anpr_webhook_deliveries_total`.
+
+### Changed
+
+- Plate hashes ignore every character that isn't a letter or digit, so
+  `34-ABC-1234` and `34 ABC 1234` hash the same. Stored hashes don't change:
+  the plates that were hashed so far only ever had spaces.
 
 ## [0.2.5] — 2026-10-27
 

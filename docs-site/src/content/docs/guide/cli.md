@@ -47,7 +47,7 @@ frame    118  track    7  06 AA 42  Ankara  det=0.88
 
 | Option | Meaning |
 |---|---|
-| `--json` | Print one JSON object per confirmed plate: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox`. |
+| `--json` | Print one JSON object per confirmed plate: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox`, and `watchlist` (`{"label": ...}` on a [watchlist](/guide/watchlist/) match, otherwise `null`). |
 | `--store` | Also save each confirmed plate to `ANPR_DATABASE_URL`, hashed like the stream does. Set `ANPR_PLATE_HMAC_PEPPER` first. |
 | `--max-frames N` | Stop after N frames. |
 | `--reconnect N` | For streams and cameras, how many times to reopen the source after it drops (default 5, two seconds apart). A file just ends. |
@@ -55,6 +55,14 @@ frame    118  track    7  06 AA 42  Ankara  det=0.88
 `ANPR_DETECT_EVERY_N_FRAMES` and `ANPR_MIN_TRACK_DWELL` apply as on the stream. The summary line
 goes to standard error, so `--json` output can be piped as it is. `Ctrl+C` stops it. The command
 exits with code 2 if the source can't be opened.
+
+With `ANPR_WEBHOOK_URL` set, or with `--store`, confirmed plates are also checked against the
+[watchlist](/guide/watchlist/), and a match calls the webhook.
+
+## `anpr watchlist`
+
+Manages the plates that raise an alert: `add`, `import`, `remove` and `list`. See
+[Watchlist and webhooks](/guide/watchlist/#commands). Since 0.3.0.
 
 ## `anpr serve`
 
@@ -77,7 +85,7 @@ Prints a new random key to use as `ANPR_API_KEY`. Since 0.2.5.
 ## `anpr dump-config`
 
 Prints the settings the service would run with, after reading the environment and `.env`, as
-JSON. The pepper and the API key are shown as `***`.
+JSON. The pepper, the API key and the webhook URL and secret are shown as `***`.
 
 ## `anpr version`
 

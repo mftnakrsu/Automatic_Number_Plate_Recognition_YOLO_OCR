@@ -15,13 +15,14 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from anpr import __version__
-from anpr.api.deps import set_detector, set_reader, set_repo
+from anpr.api.deps import set_detector, set_notifier, set_reader, set_repo, set_watchlist
 from anpr.api.middleware import MetricsMiddleware, RequestContextMiddleware
-from anpr.api.routes import detections, health, infer, stream
+from anpr.api.routes import detections, health, infer, stream, watchlist
 from anpr.config import get_settings
 from anpr.imaging import configure_pillow_limits
 from anpr.logging import configure_logging, get_logger
 from anpr.observability import configure_otel, render_metrics
+from anpr.webhook import notifier_from_settings
 
 _HERE = Path(__file__).parent
 _TEMPLATES = Jinja2Templates(directory=str(_HERE / "templates"))
@@ -41,7 +42,13 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from anpr.detector.fast_alpr import FastAlprDetector
     from anpr.ocr.fast_plate import FastPlateOcr
-    from anpr.storage.repository import DetectionRepository, init_db, retention_worker
+    from anpr.storage.repository import (
+        DetectionRepository,
+        WatchlistRepository,
+        init_db,
+        retention_worker,
+    )
+    from anpr.watchlist import Watchlist, refresh_worker
 
     set_detector(
         FastAlprDetector(
@@ -55,17 +62,29 @@ async def _lifespan(app: FastAPI) -> AsyncIterator[None]:
     repo = DetectionRepository(engine)
     set_repo(repo)
 
-    purge_task = asyncio.create_task(
-        retention_worker(repo, retention_hours=settings.retention_hours)
-    )
+    watched = Watchlist(WatchlistRepository(engine))
+    await watched.load()
+    set_watchlist(watched)
+    notifier = notifier_from_settings(settings)
+    set_notifier(notifier)
+    log.info("api.watchlist", entries=len(watched), webhook=notifier is not None)
+
+    tasks = [
+        asyncio.create_task(retention_worker(repo, retention_hours=settings.retention_hours)),
+        asyncio.create_task(refresh_worker(watched)),
+    ]
 
     log.info("api.ready")
     try:
         yield
     finally:
-        purge_task.cancel()
-        with contextlib.suppress(asyncio.CancelledError, Exception):
-            await purge_task
+        for task in tasks:
+            task.cancel()
+        for task in tasks:
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await task
+        if notifier is not None:
+            await notifier.aclose()
         await engine.dispose()
         log.info("api.shutdown")
 
@@ -96,6 +115,7 @@ def create_app() -> FastAPI:
     app.include_router(infer.router)
     app.include_router(stream.router)
     app.include_router(detections.router)
+    app.include_router(watchlist.router)
 
     app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 

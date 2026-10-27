@@ -42,6 +42,17 @@ they are reserved for super-resolution and a second OCR engine. See the [Roadmap
 | `ANPR_API_KEY` | not set | When set, `/api/v1/*` and `/ws/stream` need this key. At least 16 characters of letters, digits, `-` and `_`; `anpr generate-api-key` makes one. See [HTTP API](/guide/http-api/#api-key). Since 0.2.5. |
 | `ANPR_CORS_ORIGINS` | `*` | Comma-separated origins allowed to call the API from a browser. Narrow it in production. |
 
+## Watchlist webhook
+
+See [Watchlist and webhooks](/guide/watchlist/). Since 0.3.0.
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `ANPR_WEBHOOK_URL` | not set | Where watchlist matches are POSTed, `http://` or `https://`. Treated as a secret, because chat webhook URLs carry their token. |
+| `ANPR_WEBHOOK_SECRET` | not set | Signs each call in `X-ANPR-Signature`. Without it the calls go unsigned. |
+| `ANPR_WEBHOOK_TIMEOUT_SECONDS` | `5` | How long to wait for the receiver, up to 60. |
+| `ANPR_WEBHOOK_COOLDOWN_SECONDS` | `60` | The same plate is announced at most once in this many seconds. `0` announces every confirmed track. |
+
 ## Logging and tracing
 
 | Variable | Default | Meaning |

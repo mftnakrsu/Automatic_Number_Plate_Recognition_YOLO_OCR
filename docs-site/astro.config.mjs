@@ -41,7 +41,13 @@ export default defineConfig({
         {
           label: 'Guide',
           translations: { tr: 'Kılavuz' },
-          items: ['guide/cli', 'guide/http-api', 'guide/websocket', 'guide/configuration'],
+          items: [
+            'guide/cli',
+            'guide/http-api',
+            'guide/websocket',
+            'guide/watchlist',
+            'guide/configuration',
+          ],
         },
         {
           label: 'Operations',

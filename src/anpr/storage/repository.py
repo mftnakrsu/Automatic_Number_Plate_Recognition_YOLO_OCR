@@ -20,7 +20,7 @@ from sqlalchemy.ext.asyncio import (
 from sqlmodel import SQLModel, delete, select
 
 from anpr.logging import get_logger
-from anpr.storage.models import Detection
+from anpr.storage.models import Detection, WatchlistEntry
 
 _log = get_logger(__name__)
 
@@ -74,6 +74,43 @@ class DetectionRepository:
             result = await s.execute(stmt)
             await s.commit()
             return result.rowcount or 0  # type: ignore[attr-defined]
+
+
+class WatchlistRepository:
+    def __init__(self, engine: AsyncEngine) -> None:
+        self._sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def list_all(self) -> list[WatchlistEntry]:
+        async with self._sessionmaker() as s:
+            result = await s.execute(
+                select(WatchlistEntry).order_by(WatchlistEntry.created_at)  # type: ignore[arg-type]
+            )
+            return list(result.scalars().all())
+
+    async def upsert(self, plate_hmac: str, label: str | None) -> WatchlistEntry:
+        """Add the plate, or update its label if it is already listed."""
+        async with self._sessionmaker() as s:
+            result = await s.execute(
+                select(WatchlistEntry).where(WatchlistEntry.plate_hmac == plate_hmac)
+            )
+            entry = result.scalars().first()
+            if entry is None:
+                entry = WatchlistEntry(plate_hmac=plate_hmac, label=label)
+            else:
+                entry.label = label
+            s.add(entry)
+            await s.commit()
+            await s.refresh(entry)
+            return entry
+
+    async def remove(self, plate_hmac: str) -> bool:
+        async with self._sessionmaker() as s:
+            stmt = delete(WatchlistEntry).where(
+                WatchlistEntry.plate_hmac == plate_hmac  # type: ignore[arg-type]
+            )
+            result = await s.execute(stmt)
+            await s.commit()
+            return bool(result.rowcount)  # type: ignore[attr-defined]
 
 
 async def retention_worker(

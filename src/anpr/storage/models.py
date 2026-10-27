@@ -29,3 +29,18 @@ class Detection(SQLModel, table=True):
     bbox_x2: int
     bbox_y2: int
     confirmed: bool = Field(default=False, index=True)
+
+
+class WatchlistEntry(SQLModel, table=True):
+    """A plate to look for, kept as the same HMAC as `Detection.plate_hmac`.
+
+    `label` is free text for the operator ("delivery van"). Don't put names
+    or other personal data in it.
+    """
+
+    __tablename__ = "watchlist"  # type: ignore[assignment]  # SQLModel typing of declared_attr
+
+    id: int | None = Field(default=None, primary_key=True)
+    plate_hmac: str = Field(max_length=64, unique=True, index=True)
+    label: str | None = Field(default=None, max_length=200)
+    created_at: datetime = Field(default_factory=_utc_now)
