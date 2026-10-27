@@ -1,0 +1,94 @@
+---
+title: anpr-pipeline
+description: Türk plakaları için açık kaynak plaka tanıma. Algılama, takip, OCR, biçim denetimi ve plaka metnini hiç saklamayan kayıt; Python paketi, komut satırı aracı ve FastAPI servisi olarak.
+template: splash
+hero:
+  title: Plakayı oku, plaka metnini saklama
+  tagline: "anpr-pipeline bir fotoğrafta ya da video akışında plakayı bulur, okur, Türk plaka biçimine göre denetler ve yalnızca anahtarlı bir özetini kaydeder. Tek bir pip install ile hem komut satırı aracı hem HTTP ve WebSocket servisi gelir."
+  actions:
+    - text: Kurulum
+      link: /tr/start/install/
+      icon: right-arrow
+    - text: GitHub'da gör
+      link: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR
+      icon: github
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Bir okuma, baştan sona
+
+Dedektör plakayı bulur, OCR modeli `34ABC1Z34` okur. Ayrıştırıcı, Türk plakasının son bloğunun
+rakam olması gerektiğini bildiği için `Z`'yi `2` yapar. Sonuç 81 il koduna göre denetlenir:
+
+<div class="read">
+  <p class="plate" aria-label="34 ABC 1234 plakası">
+    <span class="band">TR</span>
+    <span class="text">34 ABC 1234</span>
+  </p>
+
+```json
+{
+  "raw_text": "34ABC1Z34",
+  "normalized_text": "34ABC1234",
+  "parsed": {
+    "province_code": "34",
+    "province_name": "İstanbul",
+    "letters": "ABC",
+    "digits": "1234",
+    "canonical": "34 ABC 1234"
+  }
+}
+```
+
+</div>
+
+Video akışında aynı plaka birçok karede okunur. En iyi okumalar karakter karakter oylanır, plaka
+ancak ondan sonra ve HMAC-SHA256 özeti olarak kaydedilir.
+
+<CardGrid>
+  <Card title="Algılama" icon="magnifier">
+    [fast-alpr](https://github.com/ankandrew/fast-alpr)'ın 65'ten fazla ülkenin plakalarıyla
+    eğitilmiş YOLOv9-t ONNX modeli. Sıradan bir işlemcide çalışır.
+  </Card>
+  <Card title="Güven skorlu OCR" icon="document">
+    [fast-plate-ocr](https://github.com/ankandrew/fast-plate-ocr) kırpılmış plakayı okur ve her
+    karakter için bir güven skoru verir. CUDA ya da OpenVINO ile de çalışabilir.
+  </Card>
+  <Card title="Türk plaka kuralları" icon="approve-check">
+    81 il kodunun tamamı ve `NN H{1-3} R{2-4}` kalıbı. 0 ile O, 1 ile I, 8 ile B gibi birbirine
+    benzeyen karakterler konumlarına göre düzeltilir.
+  </Card>
+  <Card title="Takip ve oylama" icon="list-format">
+    Bir IoU takipçisi her plakayı kareden kareye izler, son okumaya karakter konumu başına çoğunluk
+    oyu karar verir.
+  </Card>
+  <Card title="Varsayılan olarak gizlilik" icon="seti:lock">
+    Veritabanında plaka metni değil, anahtarlı özeti durur; eski kayıtlar 30 gün sonra silinir.
+    Bkz. [Gizlilik](/tr/operations/privacy/).
+  </Card>
+  <Card title="Hemen çalışır" icon="rocket">
+    `pip install`, Docker ya da `uv`. REST ve WebSocket uç noktaları, web kamerası destekli küçük
+    bir web sayfası, Prometheus metrikleri ve isteğe bağlı OpenTelemetry.
+  </Card>
+</CardGrid>
+
+## Buradan başlayın
+
+<CardGrid>
+  <LinkCard title="Kurulum" description="PyPI'dan, Docker ile ya da uv ile kaynaktan." href="/tr/start/install/" />
+  <LinkCard title="İlk plakanız" description="Önce komut satırından, sonra web sayfasından bir plaka okuyun." href="/tr/start/first-plate/" />
+  <LinkCard title="HTTP API" description="Bir resim gönderin, plakaları JSON olarak alın." href="/tr/guide/http-api/" />
+  <LinkCard title="WebSocket akışı" description="Video kareleri gönderin, onaylanan plakaları anında alın." href="/tr/guide/websocket/" />
+</CardGrid>
+
+## Açık geliştiriliyor
+
+anpr-pipeline, MIT Lisansı ile dağıtılan özgür bir yazılım. 2022'de YOLOv5, EasyOCR ve Flask ile
+başladı, 2026'da baştan yazıldı. Eski kod hâlâ deponun `legacy/` klasöründe duruyor.
+
+<CardGrid>
+  <LinkCard title="Katkıda bulunma" description="Projeyi kurun, denetimleri çalıştırın, pull request açın." href="/tr/development/contributing/" />
+  <LinkCard title="Yol haritası" description="Bilinen sınırlar ve sırada ne var." href="/tr/roadmap/" />
+</CardGrid>

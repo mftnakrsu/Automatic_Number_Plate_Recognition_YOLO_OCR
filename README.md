@@ -1,12 +1,15 @@
 # anpr-pipeline — Automatic Number Plate Recognition
 
 [![PyPI](https://img.shields.io/pypi/v/anpr-pipeline.svg)](https://pypi.org/project/anpr-pipeline/)
+[![Docs](https://img.shields.io/badge/docs-anpr.mefby.com-38bdf8.svg)](https://anpr.mefby.com)
 [![CI](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/actions/workflows/ci.yml/badge.svg)](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/actions/workflows/ci.yml)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%E2%80%933.14-blue.svg)](pyproject.toml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 End-to-end license plate recognition: **plate detection → tracking → OCR → Turkish format parsing → temporal voting → privacy-aware persistence**, served behind a FastAPI HTTP + WebSocket API.
+
+**Documentation:** <https://anpr.mefby.com> (English and Turkish).
 
 > Originally written in 2022 with a YOLOv5 fork + EasyOCR + Flask 1.1. Rewritten in 2026 on top of [`fast-alpr`](https://github.com/ankandrew/fast-alpr) + [`fast-plate-ocr`](https://github.com/ankandrew/fast-plate-ocr) + FastAPI + uv. The original code is preserved verbatim under [`legacy/`](legacy/) for reference.
 
