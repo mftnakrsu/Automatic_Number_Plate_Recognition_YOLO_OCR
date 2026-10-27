@@ -114,7 +114,8 @@
   margin-top: 0;
 }
 
-.sl-markdown-content .read pre {
+/* Starlight wraps code blocks in .expressive-code; that wrapper is the flex item. */
+.sl-markdown-content .read .expressive-code {
   flex: 1 1 18rem;
   min-width: 0;
 }
