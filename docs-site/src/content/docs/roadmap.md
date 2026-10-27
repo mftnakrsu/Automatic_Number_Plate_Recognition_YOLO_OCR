@@ -7,8 +7,8 @@ description: What anpr-pipeline can't do yet, and what is planned.
 
 These are honest gaps in the current version, 0.2.x.
 
-- **No authentication.** The HTTP and WebSocket endpoints are open. Put the service behind a reverse
-  proxy that controls access.
+- **One shared API key.** `ANPR_API_KEY` is a single key for every client; there are no users,
+  roles or per-client keys.
 - **Turkish plates only.** The detector finds plates from many countries, but the reading is only
   checked and corrected against the Turkish format. Other plates come back with `parsed: null`.
 - **No video or camera input in the CLI.** `anpr infer` reads one image. For video, use the
@@ -22,12 +22,11 @@ These are honest gaps in the current version, 0.2.x.
 
 In rough order:
 
-1. **An optional API key** for the HTTP and WebSocket endpoints.
-2. **Video files and RTSP cameras** from the command line, as in `anpr watch rtsp://camera/stream`,
+1. **Video files and RTSP cameras** from the command line, as in `anpr watch rtsp://camera/stream`,
    with the same tracking, voting and storage as the WebSocket stream.
-3. **A watchlist with webhooks.** Give it the plates to look for; it keeps only their hashes, and
+2. **A watchlist with webhooks.** Give it the plates to look for; it keeps only their hashes, and
    calls a URL when one of them is confirmed.
-4. **Plate formats for other countries**, starting with Germany and the rest of the EU, chosen with a
+3. **Plate formats for other countries**, starting with Germany and the rest of the EU, chosen with a
    setting.
 
 Ideas and pull requests are welcome on

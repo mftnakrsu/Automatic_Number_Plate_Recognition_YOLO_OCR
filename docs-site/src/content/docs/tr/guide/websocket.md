@@ -16,6 +16,18 @@ yeterince okununca onaylar.
 
 Her bağlantının kendi takipçisi ve oylaması vardır, iki akışın plakaları birbirine karışmaz.
 
+### API anahtarıyla
+
+`ANPR_API_KEY` ayarlıysa el sıkışma anahtar ister, yoksa bağlantı reddedilir (kapanış kodu `1008`).
+Başlık ekleyebilen bir istemci `X-API-Key` gönderir. Tarayıcılar WebSocket'e başlık ekleyemez; bu
+yüzden anahtarı bir alt protokol olarak sunarlar, servis de `anpr` ile yanıt verir:
+
+```js
+new WebSocket('wss://anpr.example.com/ws/stream', ['anpr', `anpr.key.${key}`]);
+```
+
+Böylece anahtar, erişim günlüklerine yazılacağı URL'ye hiç girmez.
+
 ## Ne geri gelir
 
 ```json
@@ -97,4 +109,8 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-`/` adresindeki web sayfası aynı işi tarayıcıda web kameranızla yapar.
+API anahtarı varsa `websockets.connect` çağrısına `additional_headers={"X-API-Key": anahtar}`
+ekleyin.
+
+`/` adresindeki web sayfası aynı işi tarayıcıda web kameranızla yapar. Servis anahtar istiyorsa
+sayfa bunun için bir alan gösterir ve anahtarı yalnızca o tarayıcı sekmesinde tutar.

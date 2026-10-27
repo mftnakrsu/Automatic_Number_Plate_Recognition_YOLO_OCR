@@ -6,11 +6,17 @@ canonical list. Settings are read once at app startup; no hot-reload.
 
 from __future__ import annotations
 
+import re
 import secrets
 import warnings
 
 from pydantic import Field, PositiveInt, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+_MIN_API_KEY_LEN = 16
+# The key travels in a WebSocket subprotocol token, which rules out most punctuation.
+_API_KEY_CHARS = re.compile(r"[A-Za-z0-9_-]+")
 
 
 class Settings(BaseSettings):
@@ -52,6 +58,10 @@ class Settings(BaseSettings):
     # ws_max_size so the protocol layer rejects oversized frames first.
     max_ws_frame_bytes: PositiveInt = Field(default=4 * 1024 * 1024, ge=1024)
     cors_origins: str = "*"
+    # Empty leaves /api/v1/* and /ws/stream open. When set, callers send it as
+    # `X-API-Key`, `Authorization: Bearer`, or the `anpr.key.<key>` WebSocket
+    # subprotocol, so the key stays URL-safe and out of query strings and logs.
+    api_key: SecretStr = SecretStr("")
 
     @field_validator("plate_hmac_pepper")
     @classmethod
@@ -68,6 +78,25 @@ class Settings(BaseSettings):
         if len(s) < 32:
             raise ValueError("ANPR_PLATE_HMAC_PEPPER must be at least 32 hex chars (256 bits).")
         return v
+
+    @field_validator("api_key")
+    @classmethod
+    def _check_api_key(cls, v: SecretStr) -> SecretStr:
+        s = v.get_secret_value()
+        if not s:
+            return v
+        if len(s) < _MIN_API_KEY_LEN:
+            raise ValueError(f"ANPR_API_KEY must be at least {_MIN_API_KEY_LEN} characters.")
+        if not _API_KEY_CHARS.fullmatch(s):
+            raise ValueError(
+                "ANPR_API_KEY may only contain letters, digits, '-' and '_' "
+                "(generate one with `anpr generate-api-key`)."
+            )
+        return v
+
+    @property
+    def auth_required(self) -> bool:
+        return bool(self.api_key.get_secret_value())
 
     @property
     def cors_origins_list(self) -> list[str]:

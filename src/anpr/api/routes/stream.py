@@ -19,6 +19,7 @@ from typing import Annotated, Any
 import numpy as np
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
+from anpr.api.auth import authorize_websocket
 from anpr.api.deps import app_settings, get_detector, get_reader, get_repo
 from anpr.config import Settings
 from anpr.detector.base import Detector
@@ -86,7 +87,13 @@ async def stream_ws(
     reader: Annotated[PlateReader, Depends(get_reader)],
     repo: Annotated[DetectionRepository, Depends(get_repo)],
 ) -> None:
-    await websocket.accept()
+    allowed, subprotocol = authorize_websocket(websocket, settings)
+    if not allowed:
+        # Closing before accept refuses the handshake; 1008 is "policy violation".
+        log.warning("stream.unauthorized")
+        await websocket.close(code=1008)
+        return
+    await websocket.accept(subprotocol=subprotocol)
     ACTIVE_STREAMS.inc()
     log.info("stream.connect")
 

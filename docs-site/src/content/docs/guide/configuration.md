@@ -39,6 +39,7 @@ they are reserved for super-resolution and a second OCR engine. See the [Roadmap
 | `ANPR_MAX_UPLOAD_MB` | `10` | Largest file `POST /api/v1/infer` accepts. |
 | `ANPR_MAX_IMAGE_PIXELS` | `40000000` | Largest decoded image, in pixels, on both the upload and the stream. 40 MP is above 8K. |
 | `ANPR_MAX_WS_FRAME_BYTES` | `4194304` (4 MB) | Largest frame on `/ws/stream`. |
+| `ANPR_API_KEY` | not set | When set, `/api/v1/*` and `/ws/stream` need this key. At least 16 characters of letters, digits, `-` and `_`; `anpr generate-api-key` makes one. See [HTTP API](/guide/http-api/#api-key). Since 0.2.5. |
 | `ANPR_CORS_ORIGINS` | `*` | Comma-separated origins allowed to call the API from a browser. Narrow it in production. |
 
 ## Logging and tracing

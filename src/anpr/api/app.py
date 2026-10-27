@@ -101,7 +101,9 @@ def create_app() -> FastAPI:
 
     @app.get("/", response_class=HTMLResponse, include_in_schema=False)
     async def index(request: Request) -> HTMLResponse:
-        return _TEMPLATES.TemplateResponse(request, "index.html")
+        return _TEMPLATES.TemplateResponse(
+            request, "index.html", {"auth_required": settings.auth_required}
+        )
 
     @app.get("/metrics", include_in_schema=False)
     async def metrics_endpoint() -> Response:
