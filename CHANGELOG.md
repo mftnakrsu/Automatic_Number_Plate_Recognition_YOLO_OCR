@@ -4,6 +4,15 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Changed
+
+- CI: GitHub Actions bumped to their current majors (checkout v7, setup-uv v10,
+  codecov v7, build-push v7, setup-buildx v4, login v4, metadata v6, CodeQL v4,
+  upload-artifact v7, download-artifact v8). Most of these are the Node 20 →
+  Node 24 runtime move; workflow inputs are unchanged.
+- Dependabot now groups GitHub Actions updates into a single PR and no longer
+  produces `chore(deps)(deps)` titles.
+
 ## [0.2.4] — 2026-07-31
 
 ### Security
