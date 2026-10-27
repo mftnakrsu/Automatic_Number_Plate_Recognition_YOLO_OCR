@@ -117,7 +117,7 @@ confirmed. See [Watchlist and webhooks](/guide/watchlist/#http-endpoints). Since
 | Endpoint | Response |
 |---|---|
 | `GET /health` | `{"status": "ok"}` once the app is up. Use it as a liveness probe. |
-| `GET /version` | `{"version": "0.2.5"}` |
+| `GET /version` | `{"version": "0.3.0"}` |
 | `GET /metrics` | Prometheus metrics in text format. See [Monitoring](/operations/monitoring/). |
 | `GET /` | The web page with image upload and webcam streaming. |
 
