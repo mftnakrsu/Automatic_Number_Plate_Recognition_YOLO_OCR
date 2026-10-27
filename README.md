@@ -121,6 +121,7 @@ All settings live under the `ANPR_` env prefix and can be overridden via `.env`.
 | Env | Default | Notes |
 |---|---|---|
 | `ANPR_PLATE_HMAC_PEPPER` | _(generated; warns)_ | **Required in prod.** Generate with `anpr generate-pepper`. Must be ≥ 32 chars. |
+| `ANPR_API_KEY` | _(unset = open API)_ | When set, `/api/v1/*` and `/ws/stream` need it (`X-API-Key`, `Authorization: Bearer`, or WS subprotocol `anpr.key.<key>`). Generate with `anpr generate-api-key`. |
 | `ANPR_DATABASE_URL` | `sqlite+aiosqlite:///data/anpr.db` | Switch to `postgresql+asyncpg://...` for production. |
 | `ANPR_RETENTION_HOURS` | `720` (30d) | Background worker purges rows older than this. |
 | `ANPR_DETECT_EVERY_N_FRAMES` | `3` | Detect on every Nth frame; track between. |

@@ -7,11 +7,21 @@ description: anpr servisinin REST uç noktaları, istek ve yanıt örnekleriyle.
 adresinde çalıştığını varsayıyor. FastAPI ayrıca `/docs` adresinde etkileşimli bir belge,
 `/openapi.json` adresinde de OpenAPI şemasını sunar.
 
-:::caution
-Uç noktalarda kimlik doğrulama yok. Servisi bu hâliyle internete açmayın; erişimi denetleyen bir
-ters vekil sunucunun (reverse proxy) arkasına koyun ya da özel bir ağda tutun. Bkz.
-[Canlı ortama kurulum](/tr/operations/deployment/).
-:::
+## API anahtarı
+
+0.2.5'ten beri servis bir anahtar isteyebilir. `ANPR_API_KEY` ayarlayın (`anpr generate-api-key`
+bir tane üretir); bundan sonra her `/api/v1/` uç noktası anahtarı ister. İki yoldan biriyle
+gönderilir:
+
+```bash
+curl -H "X-API-Key: $ANPR_API_KEY" -F file=@araba.jpg http://localhost:8000/api/v1/infer
+curl -H "Authorization: Bearer $ANPR_API_KEY" http://localhost:8000/api/v1/detections
+```
+
+Anahtar yoksa ya da yanlışsa yanıt `401` ve `WWW-Authenticate: Bearer` olur. `/health`,
+`/version`, `/metrics` ve web sayfası açık kalır. `ANPR_API_KEY` ayarlı değilse API'ye erişebilen
+herkes onu kullanabilir; o durumda servisi özel bir ağda ya da erişimi denetleyen bir ters vekil
+sunucunun (reverse proxy) arkasında tutun. Bkz. [Canlı ortama kurulum](/tr/operations/deployment/).
 
 ## `POST /api/v1/infer`
 
@@ -59,6 +69,7 @@ kaydeder.
 |---|---|
 | `400` | Yükleme boşsa (`empty upload`) ya da resim olarak çözülemiyorsa (`cannot decode image`). |
 | `413` | Dosya `ANPR_MAX_UPLOAD_MB` değerinden büyükse (`upload too large`) ya da çözülmüş boyutu `ANPR_MAX_IMAGE_PIXELS` değerini aşıyorsa (`image too large`). |
+| `401` | `ANPR_API_KEY` ayarlıysa ve istek anahtarı göndermediyse. |
 | `422` | İstekte `file` alanı yoksa. |
 
 Piksel sınırı, resim çözülmeden önce dosya başlığından denetlenir. Böylece kendini dev gibi

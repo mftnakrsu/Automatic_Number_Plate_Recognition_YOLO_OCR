@@ -40,10 +40,14 @@ Starts the HTTP and WebSocket service with uvicorn.
 
 Prints a new random 64-character hex string to use as `ANPR_PLATE_HMAC_PEPPER`.
 
+## `anpr generate-api-key`
+
+Prints a new random key to use as `ANPR_API_KEY`. Since 0.2.5.
+
 ## `anpr dump-config`
 
 Prints the settings the service would run with, after reading the environment and `.env`, as
-JSON. The pepper is shown as `***`.
+JSON. The pepper and the API key are shown as `***`.
 
 ## `anpr version`
 

@@ -20,8 +20,10 @@ sürüm ayrıca `ghcr.io/mftnakrsu/anpr-pipeline` adresine bir imaj yayınlar.
 
 - **Pepper'ı ayarlayın.** Gizli değer deponuzdan verin; yeniden başlatmalarda ve makineler arasında
   aynı kalsın.
-- **Önüne bir ters vekil sunucu koyun.** API'de kimlik doğrulama yok. TLS'i ve erişimi nginx,
-  Caddy, Traefik ya da ingress'iniz yönetsin; 8000 portunu doğrudan dışarı açmayın.
+- **Bir API anahtarı ayarlayın.** `ANPR_API_KEY` ile yalnızca kendi istemcileriniz resim
+  gönderebilir ya da algılamaları okuyabilir.
+- **TLS için önüne bir ters vekil sunucu koyun.** HTTPS'i nginx, Caddy, Traefik ya da ingress'iniz
+  sonlandırsın ki anahtar ve resimler ağda açık gitmesin; 8000 portunu doğrudan dışarı açmayın.
 - **CORS'u daraltın.** `ANPR_CORS_ORIGINS` değerine yalnızca API'yi gerçekten çağıran kaynakları
   yazın.
 - **Saklama süresini** amacınıza göre `ANPR_RETENTION_HOURS` ile seçin.

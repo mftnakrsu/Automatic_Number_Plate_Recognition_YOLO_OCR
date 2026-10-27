@@ -60,7 +60,7 @@ sorumlusu olarak başka şeylerin yanında şunlar size düşer:
 - kaydedilen kişiler için bir aydınlatma metni. Depoda Türkçe bir başlangıç taslağı var:
   [`KVKK_AYDINLATMA_METNI.md`](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/blob/main/KVKK_AYDINLATMA_METNI.md).
   Kendi durumunuza uyarlayın; hukuki tavsiye değildir,
-- servise ve veritabanına erişim denetimi (API'nin kendi kimlik doğrulaması yok),
+- servise ve veritabanına erişim denetimi: `ANPR_API_KEY` ayarlayın ve HTTPS üzerinden sunun,
 - daraltılmış bir `ANPR_CORS_ORIGINS`.
 
 Web sayfası, siz izlerken okunabilir plakayı tarayıcıda gösterir ama saklanmak üzere hiçbir yere

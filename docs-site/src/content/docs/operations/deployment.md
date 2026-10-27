@@ -19,8 +19,11 @@ Tagged releases also publish an image to `ghcr.io/mftnakrsu/anpr-pipeline`.
 ## Checklist
 
 - **Set the pepper** from a secret store, and keep it the same across restarts and machines.
-- **Put a reverse proxy in front.** The API has no authentication. Let nginx, Caddy, Traefik or your
-  ingress handle TLS and access, and don't expose port 8000 directly.
+- **Set an API key** with `ANPR_API_KEY`, so only your own clients can send images or read
+  detections.
+- **Put a reverse proxy in front** for TLS. Let nginx, Caddy, Traefik or your ingress terminate
+  HTTPS, so the key and the images never cross the network in the clear, and don't expose port
+  8000 directly.
 - **Narrow CORS.** Set `ANPR_CORS_ORIGINS` to the origins that really call the API.
 - **Pick the retention** your purpose needs with `ANPR_RETENTION_HOURS`.
 - **Log as JSON** (`ANPR_LOG_JSON=true`, the default in Compose) if a log collector reads them.
