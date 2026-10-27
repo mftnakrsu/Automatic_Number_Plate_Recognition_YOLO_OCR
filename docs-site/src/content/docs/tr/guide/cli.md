@@ -40,10 +40,14 @@ HTTP ve WebSocket servisini uvicorn ile başlatır.
 
 `ANPR_PLATE_HMAC_PEPPER` için 64 karakterlik yeni, rastgele bir onaltılık dizi basar.
 
+## `anpr generate-api-key`
+
+`ANPR_API_KEY` için yeni, rastgele bir anahtar basar. 0.2.5'ten beri.
+
 ## `anpr dump-config`
 
 Ortam değişkenleri ve `.env` okunduktan sonra servisin kullanacağı ayarları JSON olarak basar.
-Pepper `***` olarak görünür.
+Pepper ve API anahtarı `***` olarak görünür.
 
 ## `anpr version`
 

@@ -58,7 +58,7 @@ data controller you still need, among other things:
 - a privacy notice for the people being recorded. The repository has a starting point in Turkish,
   [`KVKK_AYDINLATMA_METNI.md`](https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/blob/main/KVKK_AYDINLATMA_METNI.md).
   Adapt it to your case; it is not legal advice,
-- access control on the service and the database (the API has no authentication of its own),
+- access control on the service and the database: set `ANPR_API_KEY` and serve over HTTPS,
 - a narrowed `ANPR_CORS_ORIGINS`.
 
 The web page shows the readable plate in the browser while you watch, but doesn't send it anywhere

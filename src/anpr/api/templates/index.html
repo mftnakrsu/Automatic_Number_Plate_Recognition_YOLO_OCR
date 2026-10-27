@@ -6,13 +6,22 @@
   <title>anpr — Automatic Number Plate Recognition</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
+<body data-auth-required="{{ 'true' if auth_required else 'false' }}">
   <header>
     <h1>anpr</h1>
     <p>Automatic Number Plate Recognition</p>
   </header>
 
   <main>
+    {% if auth_required %}
+    <section class="card key-card">
+      <h2>API key</h2>
+      <p class="hint">This server needs an API key. It stays in this browser tab only.</p>
+      <input id="api-key" type="password" autocomplete="off" spellcheck="false"
+             placeholder="ANPR_API_KEY" aria-label="API key" />
+    </section>
+    {% endif %}
+
     <section class="card">
       <h2>Upload an image</h2>
       <form id="upload-form" enctype="multipart/form-data">
@@ -44,6 +53,15 @@
 
   <script>
   (() => {
+    const keyInput = document.getElementById('api-key');
+    if (keyInput) {
+      try { keyInput.value = sessionStorage.getItem('anpr-api-key') || ''; } catch {}
+      keyInput.addEventListener('input', () => {
+        try { sessionStorage.setItem('anpr-api-key', keyInput.value.trim()); } catch {}
+      });
+    }
+    const apiKey = () => (keyInput ? keyInput.value.trim() : '');
+
     const form = document.getElementById('upload-form');
     const out = document.getElementById('upload-result');
 
@@ -52,7 +70,12 @@
       const fd = new FormData(form);
       out.innerHTML = '<em>Detecting…</em>';
       try {
-        const r = await fetch('/api/v1/infer', { method: 'POST', body: fd });
+        const headers = apiKey() ? { 'X-API-Key': apiKey() } : {};
+        const r = await fetch('/api/v1/infer', { method: 'POST', body: fd, headers });
+        if (r.status === 401) {
+          out.innerHTML = '<em class="err">The API key is missing or wrong.</em>';
+          return;
+        }
         if (!r.ok) {
           out.innerHTML = `<em class="err">Error: ${r.status} ${r.statusText}</em>`;
           return;
@@ -91,8 +114,18 @@
       }
       video.srcObject = stream;
       const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
-      ws = new WebSocket(`${proto}//${location.host}/ws/stream`);
+      const url = `${proto}//${location.host}/ws/stream`;
+      // Browsers can't set headers on a WebSocket, so the key rides in a subprotocol.
+      ws = apiKey() ? new WebSocket(url, ['anpr', `anpr.key.${apiKey()}`]) : new WebSocket(url);
       ws.binaryType = 'arraybuffer';
+      ws.onclose = (ev) => {
+        if (ev.code === 1008 || (ev.code === 1006 && document.body.dataset.authRequired === 'true')) {
+          const li = document.createElement('li');
+          li.innerHTML = '<em class="err">Stream refused: the API key is missing or wrong.</em>';
+          readsList.prepend(li);
+          stopBtn.click();
+        }
+      };
       ws.onmessage = (ev) => {
         const data = JSON.parse(ev.data);
         const li = document.createElement('li');

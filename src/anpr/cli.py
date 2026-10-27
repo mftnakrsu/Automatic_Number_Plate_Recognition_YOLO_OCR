@@ -47,6 +47,7 @@ def dump_config() -> None:
     data = settings.model_dump()
     if "plate_hmac_pepper" in data:
         data["plate_hmac_pepper"] = "***"
+    data["api_key"] = "***" if settings.auth_required else ""
     console.print_json(json.dumps(data, default=str))
 
 
@@ -54,6 +55,12 @@ def dump_config() -> None:
 def generate_pepper() -> None:
     """Generate a fresh HMAC pepper for ANPR_PLATE_HMAC_PEPPER."""
     console.print(secrets.token_hex(32))
+
+
+@app.command("generate-api-key")
+def generate_api_key() -> None:
+    """Generate a random key for ANPR_API_KEY."""
+    console.print(secrets.token_urlsafe(32))
 
 
 @app.command()

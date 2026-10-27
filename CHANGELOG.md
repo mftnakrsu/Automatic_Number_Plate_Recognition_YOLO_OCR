@@ -6,6 +6,11 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Added
 
+- Optional API key. With `ANPR_API_KEY` set, `/api/v1/*` needs it as `X-API-Key` or
+  `Authorization: Bearer`, and `/ws/stream` as a header or as the `anpr.key.<key>`
+  WebSocket subprotocol (browsers can't set WebSocket headers, and a query string
+  would land in access logs). Keys are compared in constant time. The web page asks
+  for the key when the server needs one. New command: `anpr generate-api-key`.
 - Documentation site at <https://anpr.mefby.com> in English and Turkish, built with
   Astro Starlight from `docs-site/` and published to GitHub Pages.
 - Python 3.14 support (`requires-python` now `<3.15`, CI matrix includes 3.14).
