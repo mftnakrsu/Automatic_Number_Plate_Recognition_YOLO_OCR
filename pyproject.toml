@@ -7,7 +7,7 @@ name = "anpr-pipeline"
 version = "0.2.4"
 description = "Automatic Number Plate Recognition — 2026 modernized pipeline (fast-alpr + FastAPI)"
 readme = "README.md"
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.11,<3.15"
 license = "MIT"
 authors = [{ name = "Meftun AKARSU", email = "meftunakrsu@gmail.com" }]
 keywords = ["anpr", "alpr", "license-plate", "ocr", "yolo", "computer-vision"]
@@ -18,6 +18,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering :: Image Recognition",
 ]
 
@@ -45,7 +46,11 @@ dependencies = [
 
 [project.optional-dependencies]
 gpu = ["onnxruntime-gpu>=1.20"]
-paddle = ["paddleocr>=3.5", "paddlepaddle>=3.0"]
+# paddlepaddle ships no cp314 wheels yet; skip the extra there instead of failing the install.
+paddle = [
+    "paddleocr>=3.5; python_version < '3.14'",
+    "paddlepaddle>=3.0; python_version < '3.14'",
+]
 otel = [
     "opentelemetry-api>=1.27",
     "opentelemetry-sdk>=1.27",
@@ -82,7 +87,7 @@ dev = [
     "ruff>=0.7",
     "pyright>=1.1.385",
     "pre-commit>=4.0",
-    "httpx>=0.28",
+    "httpx2>=2.16",  # starlette.testclient deprecated plain httpx
 ]
 
 [tool.ruff]
