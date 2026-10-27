@@ -6,7 +6,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Changed
 
-- CI: GitHub Actions bumped to their current majors (checkout v7, setup-uv v10,
+- CI: GitHub Actions bumped to their current majors (checkout v7, setup-uv v10.3.2 — it no longer publishes a floating major tag —
   codecov v7, build-push v7, setup-buildx v4, login v4, metadata v6, CodeQL v4,
   upload-artifact v7, download-artifact v8). Most of these are the Node 20 →
   Node 24 runtime move; workflow inputs are unchanged.
