@@ -72,6 +72,7 @@ def match_event(
     source: str,
     track_id: int,
     frame_idx: int,
+    country: str,
     province_code: str | None,
     confidence: float,
 ) -> dict[str, Any]:
@@ -81,6 +82,7 @@ def match_event(
         "source": source,
         "plate_hmac": entry.plate_hmac,
         "label": entry.label,
+        "country": country,
         "province_code": province_code,
         "track_id": track_id,
         "frame_idx": frame_idx,

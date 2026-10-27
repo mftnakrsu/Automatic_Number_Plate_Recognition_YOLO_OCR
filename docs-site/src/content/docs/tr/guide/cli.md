@@ -47,7 +47,7 @@ frame    118  track    7  06 AA 42  Ankara  det=0.88
 
 | Seçenek | Anlamı |
 |---|---|
-| `--json` | Onaylanan her plaka için bir JSON nesnesi basar: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox` ve `watchlist` ([izleme listesiyle](/tr/guide/watchlist/) eşleşmede `{"label": ...}`, yoksa `null`). |
+| `--json` | Onaylanan her plaka için bir JSON nesnesi basar: `frame_idx`, `track_id`, `plate`, `country`, `province_code`, `province_name`, `confidence`, `bbox` ve `watchlist` ([izleme listesiyle](/tr/guide/watchlist/) eşleşmede `{"label": ...}`, yoksa `null`). |
 | `--store` | Onaylanan her plakayı, akışın yaptığı gibi özetleyerek `ANPR_DATABASE_URL` adresine de kaydeder. Önce `ANPR_PLATE_HMAC_PEPPER` ayarlayın. |
 | `--max-frames N` | N kareden sonra durur. |
 | `--reconnect N` | Yayın ve kameralarda bağlantı kopunca kaynağın kaç kez yeniden açılacağı (varsayılan 5, iki saniye arayla). Dosya ise biter. |

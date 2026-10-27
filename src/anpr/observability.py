@@ -54,7 +54,7 @@ DETECTIONS = Counter(
 CONFIRMED_PLATES = Counter(
     "anpr_confirmed_plates_total",
     "Total temporally-confirmed plate reads.",
-    ["province_code"],
+    ["country", "province_code"],
 )
 
 WATCHLIST_MATCHES = Counter(

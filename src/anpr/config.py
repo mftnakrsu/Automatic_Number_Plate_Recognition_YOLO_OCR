@@ -13,6 +13,8 @@ import warnings
 from pydantic import Field, PositiveInt, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from anpr.postprocess.formats import FORMATS, PlateFormat, get_formats
+
 _MIN_API_KEY_LEN = 16
 # The key travels in a WebSocket subprotocol token, which rules out most punctuation.
 _API_KEY_CHARS = re.compile(r"[A-Za-z0-9_-]+")
@@ -37,6 +39,9 @@ class Settings(BaseSettings):
     sr_min_plate_width: int = Field(default=80, ge=0)
     min_track_dwell: PositiveInt = 5
     ocr_fallback_threshold: float = Field(default=0.85, ge=0.0, le=1.0)
+
+    # Country plate layouts to accept, in order of preference: tr, de, fr, it, es, be, pt.
+    plate_formats: str = "tr"
 
     detector_model: str = "yolo-v9-t-384-license-plate-end2end"
     detector_conf_threshold: float = Field(default=0.4, ge=0.0, le=1.0)
@@ -103,6 +108,24 @@ class Settings(BaseSettings):
                 "(generate one with `anpr generate-api-key`)."
             )
         return v
+
+    @field_validator("plate_formats")
+    @classmethod
+    def _check_plate_formats(cls, v: str) -> str:
+        codes = [c.strip().lower() for c in v.split(",") if c.strip()]
+        if not codes:
+            raise ValueError("ANPR_PLATE_FORMATS needs at least one country code.")
+        unknown = [c for c in codes if c not in FORMATS]
+        if unknown:
+            raise ValueError(
+                f"ANPR_PLATE_FORMATS: unknown {', '.join(unknown)}; "
+                f"choose from {', '.join(FORMATS)}."
+            )
+        return ",".join(dict.fromkeys(codes))
+
+    @property
+    def plate_format_list(self) -> tuple[PlateFormat, ...]:
+        return get_formats(self.plate_formats.split(","))
 
     @field_validator("webhook_url")
     @classmethod

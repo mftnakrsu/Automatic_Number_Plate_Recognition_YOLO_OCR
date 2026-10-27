@@ -47,7 +47,7 @@ frame    118  track    7  06 AA 42  Ankara  det=0.88
 
 | Option | Meaning |
 |---|---|
-| `--json` | Print one JSON object per confirmed plate: `frame_idx`, `track_id`, `plate`, `province_code`, `province_name`, `confidence`, `bbox`, and `watchlist` (`{"label": ...}` on a [watchlist](/guide/watchlist/) match, otherwise `null`). |
+| `--json` | Print one JSON object per confirmed plate: `frame_idx`, `track_id`, `plate`, `country`, `province_code`, `province_name`, `confidence`, `bbox`, and `watchlist` (`{"label": ...}` on a [watchlist](/guide/watchlist/) match, otherwise `null`). |
 | `--store` | Also save each confirmed plate to `ANPR_DATABASE_URL`, hashed like the stream does. Set `ANPR_PLATE_HMAC_PEPPER` first. |
 | `--max-frames N` | Stop after N frames. |
 | `--reconnect N` | For streams and cameras, how many times to reopen the source after it drops (default 5, two seconds apart). A file just ends. |

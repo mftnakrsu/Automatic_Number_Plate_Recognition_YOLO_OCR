@@ -30,8 +30,10 @@ class BBoxOut(BaseModel):
 
 
 class ParsedOut(BaseModel):
-    province_code: str
-    province_name: str
+    country: str
+    # Türkiye only; null for the other countries.
+    province_code: str | None
+    province_name: str | None
     letters: str
     digits: str
     canonical: str
@@ -69,7 +71,7 @@ async def infer_endpoint(
         raise HTTPException(status_code=400, detail="cannot decode image") from e
 
     start = time.perf_counter()
-    reads = infer_image(bgr, detector, reader)
+    reads = infer_image(bgr, detector, reader, formats=settings.plate_format_list)
     INFERENCE_LATENCY.labels(route="infer").observe(time.perf_counter() - start)
     for r in reads:
         DETECTIONS.labels(route="infer", parsed="valid" if r.parsed else "invalid").inc()
@@ -86,6 +88,7 @@ async def infer_endpoint(
             normalized_text=r.normalized_text,
             parsed=(
                 ParsedOut(
+                    country=r.parsed.country,
                     province_code=r.parsed.province_code,
                     province_name=r.parsed.province_name,
                     letters=r.parsed.letters,

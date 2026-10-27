@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from pathlib import Path
 
 import pytest
 import pytest_asyncio
@@ -99,3 +100,47 @@ async def test_purge_older_than(repo: DetectionRepository) -> None:
     remaining = await repo.list_recent()
     assert len(remaining) == 1
     assert remaining[0].plate_hmac == "f" * 64
+
+
+async def test_init_db_adds_the_country_column_to_an_old_database(tmp_path: Path) -> None:
+    import sqlite3
+    from contextlib import closing
+
+    path = tmp_path / "old.db"
+    with closing(sqlite3.connect(path)) as db:
+        # The detections table as 0.2.x created it, with one row in it.
+        db.execute(
+            "CREATE TABLE detections (id INTEGER PRIMARY KEY, timestamp DATETIME NOT NULL, "
+            "track_id INTEGER, plate_hmac VARCHAR(64) NOT NULL, province_code VARCHAR(2), "
+            "confidence FLOAT NOT NULL, bbox_x1 INTEGER NOT NULL, bbox_y1 INTEGER NOT NULL, "
+            "bbox_x2 INTEGER NOT NULL, bbox_y2 INTEGER NOT NULL, confirmed BOOLEAN NOT NULL)"
+        )
+        db.execute(
+            "INSERT INTO detections VALUES (1, '2026-10-01 10:00:00', 1, ?, '34', 0.9, 0, 0, 1, 1, 1)",
+            ("o" * 64,),
+        )
+        db.commit()
+
+    engine = await init_db(f"sqlite+aiosqlite:///{path}")
+    try:
+        repo = DetectionRepository(engine)
+        await repo.save(
+            Detection(
+                plate_hmac="n" * 64,
+                country="de",
+                confidence=0.9,
+                bbox_x1=0,
+                bbox_y1=0,
+                bbox_x2=1,
+                bbox_y2=1,
+                confirmed=True,
+            )
+        )
+        rows = {r.plate_hmac[0]: r for r in await repo.list_recent()}
+        assert rows["o"].country is None
+        assert rows["o"].province_code == "34"
+        assert rows["n"].country == "de"
+    finally:
+        await engine.dispose()
+    # A second start finds the column and leaves it alone.
+    await (await init_db(f"sqlite+aiosqlite:///{path}")).dispose()

@@ -127,6 +127,7 @@ async def stream_ws(
         detect_every_n=settings.detect_every_n_frames,
         min_track_dwell=settings.min_track_dwell,
         sr_min_plate_width=settings.sr_min_plate_width,
+        formats=settings.plate_format_list,
     )
 
     prod_task = asyncio.create_task(_producer(websocket, queue, settings))
@@ -143,6 +144,7 @@ async def stream_ws(
                 "parsed": (
                     {
                         "canonical": event.plate.parsed.canonical,
+                        "country": event.plate.parsed.country,
                         "province_code": event.plate.parsed.province_code,
                         "province_name": event.plate.parsed.province_name,
                     }
@@ -163,7 +165,10 @@ async def stream_ws(
                 and event.plate.parsed is not None
                 and event.track_id not in persisted_track_ids
             ):
-                CONFIRMED_PLATES.labels(province_code=event.plate.parsed.province_code).inc()
+                CONFIRMED_PLATES.labels(
+                    country=event.plate.parsed.country,
+                    province_code=event.plate.parsed.province_code or "",
+                ).inc()
                 plate_hmac = hash_plate(event.confirmed, pepper)
                 # Before the write, so a failed save can't swallow the alert.
                 alert(
@@ -173,6 +178,7 @@ async def stream_ws(
                     source="stream",
                     track_id=event.track_id,
                     frame_idx=event.frame_idx,
+                    country=event.plate.parsed.country,
                     province_code=event.plate.parsed.province_code,
                     confidence=event.plate.detection.confidence,
                 )
@@ -180,6 +186,7 @@ async def stream_ws(
                     Detection(
                         track_id=event.track_id,
                         plate_hmac=plate_hmac,
+                        country=event.plate.parsed.country,
                         province_code=event.plate.parsed.province_code,
                         confidence=event.plate.detection.confidence,
                         bbox_x1=event.plate.detection.bbox.x1,
@@ -193,7 +200,7 @@ async def stream_ws(
                 log.info(
                     "stream.persisted",
                     track_id=event.track_id,
-                    province=event.plate.parsed.province_code,
+                    country=event.plate.parsed.country,
                 )
     except WebSocketDisconnect:
         log.info("stream.client_disconnect")

@@ -7,7 +7,7 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-End-to-end license plate recognition: **plate detection → tracking → OCR → Turkish format parsing → temporal voting → privacy-aware persistence**, served behind a FastAPI HTTP + WebSocket API.
+End-to-end license plate recognition: **plate detection → tracking → OCR → plate format parsing (Türkiye + six EU countries) → temporal voting → privacy-aware persistence**, served behind a FastAPI HTTP + WebSocket API.
 
 **Documentation:** <https://anpr.mefby.com> (English and Turkish).
 
@@ -59,7 +59,7 @@ uv run anpr infer tests/fixtures/sample_plate.jpg
 | **Detector** | [`fast-alpr`](https://github.com/ankandrew/fast-alpr)'s bundled YOLOv9-t 384 ONNX license-plate model (MIT, 65+ countries) |
 | **OCR** | [`fast-plate-ocr`](https://github.com/ankandrew/fast-plate-ocr) `cct-s-v2-global-model` (sub-millisecond GPU, per-character confidences) |
 | **Tracker** | Dependency-free greedy IoU tracker (swap to ByteTrack via the `Tracker` Protocol) |
-| **Turkish parser** | All 81 province codes, strict regex on `NN [A]{1-3} [N]{2-4}` |
+| **Plate formats** | Türkiye (all 81 province codes) by default; Germany, France, Italy, Spain, Belgium and Portugal via `ANPR_PLATE_FORMATS` |
 | **Confusion fix** | Position-aware OCR fixups (0/O, 1/I/L, 5/S, 8/B, 2/Z, 6/G, 0/D/Q) |
 | **Temporal voting** | Per-character-position majority vote over top-K confidence-weighted reads per track |
 | **Web** | FastAPI 0.115 + uvicorn, REST + WebSocket, dark-theme HTMX UI |
@@ -128,6 +128,7 @@ All settings live under the `ANPR_` env prefix and can be overridden via `.env`.
 | `ANPR_DATABASE_URL` | `sqlite+aiosqlite:///data/anpr.db` | Switch to `postgresql+asyncpg://...` for production. |
 | `ANPR_RETENTION_HOURS` | `720` (30d) | Background worker purges rows older than this. |
 | `ANPR_WEBHOOK_URL` | _(unset)_ | Watchlist matches are POSTed here; `ANPR_WEBHOOK_SECRET` signs them (`X-ANPR-Signature`). |
+| `ANPR_PLATE_FORMATS` | `tr` | Country plate layouts to accept, in order: `tr`, `de`, `fr`, `it`, `es`, `be`, `pt`. |
 | `ANPR_DETECT_EVERY_N_FRAMES` | `3` | Detect on every Nth frame; track between. |
 | `ANPR_MIN_TRACK_DWELL` | `5` | Frames a track must persist before the voter emits confirmed. |
 | `ANPR_DETECTOR_MODEL` | `yolo-v9-t-384-license-plate-end2end` | Pass a path to use a fine-tuned ONNX. |

@@ -41,6 +41,7 @@ This keeps the key out of the URL, where access logs would record it.
   "normalized_text": "34ABC1234",
   "parsed": {
     "canonical": "34 ABC 1234",
+    "country": "tr",
     "province_code": "34",
     "province_name": "İstanbul"
   },

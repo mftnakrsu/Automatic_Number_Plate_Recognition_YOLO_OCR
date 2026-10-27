@@ -42,6 +42,7 @@ Böylece anahtar, erişim günlüklerine yazılacağı URL'ye hiç girmez.
   "normalized_text": "34ABC1234",
   "parsed": {
     "canonical": "34 ABC 1234",
+    "country": "tr",
     "province_code": "34",
     "province_name": "İstanbul"
   },

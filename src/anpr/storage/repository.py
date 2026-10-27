@@ -11,6 +11,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy import Connection, inspect, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -27,11 +28,26 @@ _log = get_logger(__name__)
 
 
 async def init_db(database_url: str) -> AsyncEngine:
-    """Open the async engine and create tables if missing."""
+    """Open the async engine, create tables if missing and add columns newer versions brought."""
     engine = create_async_engine(database_url, echo=False, future=True)
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+        await conn.run_sync(_add_missing_columns)
     return engine
+
+
+# Columns added to existing tables after their first release, as (table, column, SQL type).
+_ADDED_COLUMNS = (("detections", "country", "VARCHAR(2)"),)
+
+
+def _add_missing_columns(conn: Connection) -> None:
+    """`create_all` skips tables that already exist, so add new nullable columns by hand."""
+    inspector = inspect(conn)
+    for table, column, sql_type in _ADDED_COLUMNS:
+        existing = {c["name"] for c in inspector.get_columns(table)}
+        if column not in existing:
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {sql_type}"))
+            _log.info("storage.column_added", table=table, column=column)
 
 
 class DetectionRepository:

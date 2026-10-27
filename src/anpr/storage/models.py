@@ -22,6 +22,8 @@ class Detection(SQLModel, table=True):
     timestamp: datetime = Field(default_factory=_utc_now, index=True)
     track_id: int | None = Field(default=None, index=True)
     plate_hmac: str = Field(max_length=64, index=True)
+    # Added in 0.3.0; `init_db` adds the column to older databases, where old rows stay NULL.
+    country: str | None = Field(default=None, max_length=2)
     province_code: str | None = Field(default=None, max_length=2, index=True)
     confidence: float = Field(ge=0.0, le=1.0)
     bbox_x1: int
