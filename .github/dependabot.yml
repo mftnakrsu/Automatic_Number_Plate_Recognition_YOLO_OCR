@@ -18,7 +18,7 @@ updates:
       - "dependencies"
       - "python"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
     groups:
       patch-and-minor:
@@ -36,8 +36,12 @@ updates:
       - "dependencies"
       - "ci"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # Docker base image (python:3.13-slim).
   - package-ecosystem: "docker"
@@ -49,5 +53,5 @@ updates:
       - "dependencies"
       - "docker"
     commit-message:
-      prefix: "chore(deps)"
+      prefix: "chore"
       include: "scope"
