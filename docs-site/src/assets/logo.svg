@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 32" role="img" aria-label="anpr-pipeline">
+  <rect x="1.5" y="1.5" width="61" height="29" rx="5" fill="#ffffff" stroke="#111827" stroke-width="3"/>
+  <path d="M6.5 3h8v26h-8a3.5 3.5 0 0 1-3.5-3.5v-19A3.5 3.5 0 0 1 6.5 3z" fill="#1d4ed8"/>
+  <rect x="21" y="9" width="5" height="14" rx="1.2" fill="#111827"/>
+  <rect x="29" y="9" width="5" height="14" rx="1.2" fill="#111827"/>
+  <rect x="39" y="9" width="5" height="14" rx="1.2" fill="#111827"/>
+  <rect x="47" y="9" width="5" height="14" rx="1.2" fill="#111827"/>
+  <rect x="55" y="9" width="3" height="14" rx="1" fill="#38bdf8"/>
+</svg>

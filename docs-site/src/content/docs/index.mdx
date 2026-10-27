@@ -1,0 +1,96 @@
+---
+title: anpr-pipeline
+description: Open-source licence-plate recognition for Turkish plates. Detection, tracking, OCR, format checks and storage that never keeps the plate text, as a Python package, a CLI and a FastAPI service.
+template: splash
+hero:
+  title: Read number plates, keep no plate text
+  tagline: "anpr-pipeline finds a plate in an image or a video stream, reads it, checks it against the Turkish plate format and stores only a keyed hash of it. One pip install gives you a CLI and an HTTP and WebSocket service."
+  actions:
+    - text: Install
+      link: /start/install/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR
+      icon: github
+      variant: secondary
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## One read, start to finish
+
+The detector finds the plate, the OCR model reads `34ABC1Z34`, and the parser knows that the last
+block of a Turkish plate is digits, so the `Z` becomes a `2`. The result is checked against the 81
+province codes:
+
+<div class="read">
+  <p class="plate" aria-label="Number plate 34 ABC 1234">
+    <span class="band">TR</span>
+    <span class="text">34 ABC 1234</span>
+  </p>
+
+```json
+{
+  "raw_text": "34ABC1Z34",
+  "normalized_text": "34ABC1234",
+  "parsed": {
+    "province_code": "34",
+    "province_name": "İstanbul",
+    "letters": "ABC",
+    "digits": "1234",
+    "canonical": "34 ABC 1234"
+  }
+}
+```
+
+</div>
+
+On a video stream the same plate is read on many frames. A per-character vote over the best reads
+settles it, and only then is it stored, as an HMAC-SHA256 hash.
+
+<CardGrid>
+  <Card title="Detection" icon="magnifier">
+    A YOLOv9-t ONNX model from [fast-alpr](https://github.com/ankandrew/fast-alpr), trained on
+    plates from more than 65 countries. Runs on a plain CPU.
+  </Card>
+  <Card title="OCR with confidences" icon="document">
+    [fast-plate-ocr](https://github.com/ankandrew/fast-plate-ocr) reads the cropped plate and gives
+    a confidence for every character. It can also run on CUDA or OpenVINO.
+  </Card>
+  <Card title="Turkish plate rules" icon="approve-check">
+    All 81 province codes and the `NN L{1-3} N{2-4}` shape. Characters that look alike, such as
+    0 and O, 1 and I, or 8 and B, are fixed by position.
+  </Card>
+  <Card title="Tracking and voting" icon="list-format">
+    An IoU tracker follows each plate across frames, and a majority vote per character position
+    decides the final reading.
+  </Card>
+  <Card title="Privacy by default" icon="seti:lock">
+    The database holds a keyed hash, never the plate text, and old rows are deleted after 30 days.
+    See [Privacy](/operations/privacy/).
+  </Card>
+  <Card title="Ready to run" icon="rocket">
+    `pip install`, Docker or `uv`. REST and WebSocket endpoints, a small web page with webcam
+    support, Prometheus metrics and optional OpenTelemetry.
+  </Card>
+</CardGrid>
+
+## Start here
+
+<CardGrid>
+  <LinkCard title="Install" description="From PyPI, with Docker, or from source with uv." href="/start/install/" />
+  <LinkCard title="Your first plate" description="Read a plate from the command line, then from the web page." href="/start/first-plate/" />
+  <LinkCard title="HTTP API" description="Send an image, get the plates back as JSON." href="/guide/http-api/" />
+  <LinkCard title="WebSocket stream" description="Send video frames, get confirmed plates as they appear." href="/guide/websocket/" />
+</CardGrid>
+
+## Built in the open
+
+anpr-pipeline is free software under the MIT License. It started in 2022 as a YOLOv5, EasyOCR and
+Flask project and was rewritten in 2026. The old code is still in the repository's `legacy/`
+folder.
+
+<CardGrid>
+  <LinkCard title="Contributing" description="Set up the project, run the checks and open a pull request." href="/development/contributing/" />
+  <LinkCard title="Roadmap" description="Known limits, and what comes next." href="/roadmap/" />
+</CardGrid>

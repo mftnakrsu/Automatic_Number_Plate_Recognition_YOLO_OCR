@@ -1,0 +1,120 @@
+/*
+ * Colours follow the service's own web UI: slate greys with a sky-blue accent. The signature detail
+ * is the blue country band on the left edge of a Turkish (and EU) number plate, which cards and
+ * the plate sample wear.
+ * Starlight sets data-theme="dark" or "light" on <html>; :root holds the dark values.
+ * Text contrast stays at 4.5:1 or more on the page, sidebar and inline code backgrounds.
+ */
+:root {
+  --sl-color-accent-low: #0c2a3d;
+  --sl-color-accent: #38bdf8;
+  --sl-color-accent-high: #d4efff;
+
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e2e8f0;
+  --sl-color-gray-2: #cbd5e1;
+  --sl-color-gray-3: #94a3b8;
+  --sl-color-gray-4: #64748b;
+  --sl-color-gray-5: #334155;
+  --sl-color-gray-6: #1e293b;
+  --sl-color-black: #0f172a;
+
+  --anpr-band: #1d4ed8;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0f2fe;
+  --sl-color-accent: #0369a1;
+  --sl-color-accent-high: #0c3a5c;
+
+  --sl-color-white: #0f172a;
+  --sl-color-gray-1: #1e293b;
+  --sl-color-gray-2: #334155;
+  --sl-color-gray-3: #475569;
+  --sl-color-gray-4: #94a3b8;
+  --sl-color-gray-5: #e2e8f0;
+  --sl-color-gray-6: #f1f5f9;
+  --sl-color-gray-7: #f8fafc;
+  --sl-color-black: #ffffff;
+
+  --anpr-band: #1d4ed8;
+}
+
+/* Cards use the accent instead of Starlight's rotating rainbow, with the plate's blue band down
+   the left edge. */
+.card {
+  --sl-card-border: var(--sl-color-accent);
+  --sl-card-bg: var(--sl-color-accent-low);
+  border-left: 6px solid var(--anpr-band);
+}
+
+/* A hero without an image (the 404 page) is centred in one column. */
+@media (min-width: 50rem) {
+  .hero:not(:has(> img, > .hero-html)) {
+    grid-template-columns: 100%;
+    padding-block: clamp(2.5rem, calc(1rem + 8vmin), 6rem) 2rem;
+  }
+
+  .hero:not(:has(> img, > .hero-html)) .stack {
+    text-align: center;
+  }
+
+  .hero:not(:has(> img, > .hero-html)) .copy {
+    align-items: center;
+  }
+
+  .hero:not(:has(> img, > .hero-html)) .actions {
+    justify-content: center;
+  }
+}
+
+/* A number plate drawn in HTML: blue band with "TR", then the reading. Used on the home page to
+   show what one read turns into. */
+.sl-markdown-content .plate {
+  display: inline-flex;
+  align-items: stretch;
+  margin: 0;
+  border: 3px solid #111827;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: #111827;
+  font-family: var(--sl-font-mono);
+  font-size: clamp(1.4rem, 1rem + 2.5vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.sl-markdown-content .plate .band {
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem 0.4rem 0.35rem;
+  background: var(--anpr-band);
+  color: #ffffff;
+  font-family: var(--sl-font);
+  font-size: 0.4em;
+  letter-spacing: 0.02em;
+}
+
+.sl-markdown-content .plate .text {
+  padding: 0.45rem 0.8rem;
+  white-space: nowrap;
+}
+
+/* The plate next to the pieces it is parsed into; stacks on narrow screens. */
+.sl-markdown-content .read {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+  align-items: center;
+}
+
+.sl-markdown-content .read > * {
+  margin-top: 0;
+}
+
+.sl-markdown-content .read pre {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
