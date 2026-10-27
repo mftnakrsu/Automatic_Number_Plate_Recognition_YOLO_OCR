@@ -8,10 +8,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 
+from anpr.api.auth import require_api_key
 from anpr.api.deps import get_repo
 from anpr.storage.repository import DetectionRepository
 
-router = APIRouter(prefix="/api/v1", tags=["detections"])
+router = APIRouter(prefix="/api/v1", tags=["detections"], dependencies=[Depends(require_api_key)])
 
 
 class DetectionOut(BaseModel):

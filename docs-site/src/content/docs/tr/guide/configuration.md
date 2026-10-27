@@ -40,6 +40,7 @@ kullanılmaz; süper çözünürlük ve ikinci bir OCR motoru için ayrılmışl
 | `ANPR_MAX_UPLOAD_MB` | `10` | `POST /api/v1/infer` uç noktasının kabul ettiği en büyük dosya. |
 | `ANPR_MAX_IMAGE_PIXELS` | `40000000` | Hem yüklemede hem akışta çözülmüş resmin en fazla piksel sayısı. 40 MP, 8K'nın üstünde. |
 | `ANPR_MAX_WS_FRAME_BYTES` | `4194304` (4 MB) | `/ws/stream` üzerindeki en büyük kare. |
+| `ANPR_API_KEY` | ayarsız | Ayarlıysa `/api/v1/*` ve `/ws/stream` bu anahtarı ister. Harf, rakam, `-` ve `_` içeren en az 16 karakter; `anpr generate-api-key` bir tane üretir. Bkz. [HTTP API](/tr/guide/http-api/#api-anahtarı). 0.2.5'ten beri. |
 | `ANPR_CORS_ORIGINS` | `*` | API'yi tarayıcıdan çağırabilecek kaynaklar, virgülle ayrılmış. Canlı ortamda daraltın. |
 
 ## Günlükler ve izleme

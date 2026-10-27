@@ -8,6 +8,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
+from anpr.api.auth import require_api_key
 from anpr.api.deps import app_settings, get_detector, get_reader
 from anpr.config import Settings
 from anpr.detector.base import Detector
@@ -17,7 +18,7 @@ from anpr.observability import DETECTIONS, INFERENCE_LATENCY
 from anpr.ocr.base import PlateReader
 from anpr.pipeline import infer_image
 
-router = APIRouter(prefix="/api/v1", tags=["inference"])
+router = APIRouter(prefix="/api/v1", tags=["inference"], dependencies=[Depends(require_api_key)])
 log = get_logger(__name__)
 
 

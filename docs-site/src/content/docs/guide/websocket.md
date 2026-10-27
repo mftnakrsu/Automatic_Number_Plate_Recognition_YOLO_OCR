@@ -15,6 +15,18 @@ has been read often enough.
 
 Each connection has its own tracker and vote, so plates from two streams never mix.
 
+### With an API key
+
+When `ANPR_API_KEY` is set, the handshake needs the key, or the connection is refused (close code
+`1008`). A client that can set headers sends `X-API-Key`. Browsers can't set headers on a
+WebSocket, so they offer it as a subprotocol instead, and the server answers with `anpr`:
+
+```js
+new WebSocket('wss://anpr.example.com/ws/stream', ['anpr', `anpr.key.${key}`]);
+```
+
+This keeps the key out of the URL, where access logs would record it.
+
 ## What comes back
 
 ```json
@@ -97,4 +109,7 @@ async def main() -> None:
 asyncio.run(main())
 ```
 
-The web page at `/` does the same with your webcam in the browser.
+With an API key, pass `additional_headers={"X-API-Key": key}` to `websockets.connect`.
+
+The web page at `/` does the same with your webcam in the browser. When the server needs a key,
+the page shows a field for it and keeps it in that browser tab only.

@@ -6,11 +6,20 @@ description: The REST endpoints of the anpr service, with request and response e
 `anpr serve` starts a FastAPI app. The examples below assume it runs on `localhost:8000`. FastAPI
 also serves an interactive reference at `/docs` and the OpenAPI schema at `/openapi.json`.
 
-:::caution
-The endpoints have no authentication. Don't expose the service to the internet as it is; put it
-behind a reverse proxy that handles access, or keep it on a private network. See
+## API key
+
+Since 0.2.5 the service can ask for a key. Set `ANPR_API_KEY` (make one with
+`anpr generate-api-key`) and every `/api/v1/` endpoint needs it, sent either way:
+
+```bash
+curl -H "X-API-Key: $ANPR_API_KEY" -F file=@car.jpg http://localhost:8000/api/v1/infer
+curl -H "Authorization: Bearer $ANPR_API_KEY" http://localhost:8000/api/v1/detections
+```
+
+A missing or wrong key gets `401` with `WWW-Authenticate: Bearer`. `/health`, `/version`,
+`/metrics` and the web page stay open. Without `ANPR_API_KEY` the API is open to anyone who can
+reach it, so then keep it on a private network or behind a proxy that controls access; see
 [Deployment](/operations/deployment/).
-:::
 
 ## `POST /api/v1/infer`
 
@@ -58,6 +67,7 @@ confirmed plates.
 |---|---|
 | `400` | The upload is empty (`empty upload`) or can't be decoded as an image (`cannot decode image`). |
 | `413` | The file is bigger than `ANPR_MAX_UPLOAD_MB` (`upload too large`), or its decoded size is over `ANPR_MAX_IMAGE_PIXELS` (`image too large`). |
+| `401` | `ANPR_API_KEY` is set and the request didn't send it. |
 | `422` | The request has no `file` field. |
 
 The pixel limit is checked from the image header before the image is decoded, so a small file that
