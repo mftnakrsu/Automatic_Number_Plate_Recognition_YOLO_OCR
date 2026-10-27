@@ -13,7 +13,6 @@ import warnings
 from pydantic import Field, PositiveInt, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 _MIN_API_KEY_LEN = 16
 # The key travels in a WebSocket subprotocol token, which rules out most punctuation.
 _API_KEY_CHARS = re.compile(r"[A-Za-z0-9_-]+")
