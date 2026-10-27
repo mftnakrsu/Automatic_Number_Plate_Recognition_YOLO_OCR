@@ -19,13 +19,19 @@ veritabanında hiçbir plakanın okunabilir hâlde durmaması için tasarlandı.
 | kutu | `412, 388, 618, 436` |
 | `track_id`, `timestamp`, `confirmed` | |
 
-Plaka metni, resim ve kare kaydedilmez. `POST /api/v1/infer` ve komut satırı aracı hiçbir şey
-kaydetmez.
+`anpr watch --store` da aynı satırı yazar. Plaka metni, resim ve kare kaydedilmez.
+`POST /api/v1/infer` ve `anpr infer` hiçbir şey kaydetmez.
+
+[İzleme listesi](/tr/guide/watchlist/) de aynı şekilde tutulur: eklediğiniz her plaka geldiği anda
+özetlenir, yalnızca özet ve etiketiniz yazılır. Webhook çağrıları plakayı değil, özeti ve etiketi
+taşır. İzleme listesinin HTTP uçları `ANPR_API_KEY` olmadan çalışmaz: gönderilen her plakayı
+özetledikleri için açık bir API'de herkesin bir plakanın görülüp görülmediğini anlamasına izin
+verirlerdi.
 
 ## Özet nasıl çalışır
 
-Plaka önce tek bir biçime getirilir (boşluklar atılır, büyük harfe çevrilir); böylece `34 abc 1234`
-ile `34ABC1234` aynı özeti verir. Sonra `ANPR_PLATE_HMAC_PEPPER` anahtarıyla HMAC-SHA256 özeti
+Plaka önce tek bir biçime getirilir (yalnızca harfler ve rakamlar kalır, büyük harfe çevrilir);
+böylece `34 abc 1234`, `34-ABC-1234` ve `34ABC1234` aynı özeti verir. Sonra `ANPR_PLATE_HMAC_PEPPER` anahtarıyla HMAC-SHA256 özeti
 alınır.
 
 - **Eşleştirme yine çalışır.** Aynı plaka, aynı pepper'la her zaman aynı özeti verir. Bu sayede

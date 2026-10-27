@@ -57,6 +57,18 @@ CONFIRMED_PLATES = Counter(
     ["province_code"],
 )
 
+WATCHLIST_MATCHES = Counter(
+    "anpr_watchlist_matches_total",
+    "Confirmed plates found on the watchlist.",
+    ["source"],
+)
+
+WEBHOOK_DELIVERIES = Counter(
+    "anpr_webhook_deliveries_total",
+    "Webhook calls for watchlist matches, by outcome after retries.",
+    ["result"],
+)
+
 ACTIVE_STREAMS = Gauge(
     "anpr_active_websocket_streams",
     "Currently active WebSocket streaming sessions.",

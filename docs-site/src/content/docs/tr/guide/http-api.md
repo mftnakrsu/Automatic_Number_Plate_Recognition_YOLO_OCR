@@ -107,6 +107,11 @@ Yanıtta plaka metni yok, çünkü veritabanında da yok. Bilinen bir plakanın 
 anlamak için aynı pepper'la özetini hesaplayıp `plate_hmac` ile karşılaştırın; bkz.
 [Gizlilik](/tr/operations/privacy/).
 
+## İzleme listesi
+
+`/api/v1/watchlist` üzerindeki `GET`, `POST` ve `DELETE`, onaylandığında webhook çağıran plakaları
+yönetir. Bkz. [İzleme listesi ve webhook](/tr/guide/watchlist/#http-uçları). 0.3.0'dan beri.
+
 ## Servis uç noktaları
 
 | Uç nokta | Yanıt |

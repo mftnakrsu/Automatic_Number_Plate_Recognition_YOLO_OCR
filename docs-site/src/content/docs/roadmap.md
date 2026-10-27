@@ -20,9 +20,7 @@ These are honest gaps in the current version, 0.2.x.
 
 In rough order:
 
-1. **A watchlist with webhooks.** Give it the plates to look for; it keeps only their hashes, and
-   calls a URL when one of them is confirmed.
-2. **Plate formats for other countries**, starting with Germany and the rest of the EU, chosen with a
+1. **Plate formats for other countries**, starting with Germany and the rest of the EU, chosen with a
    setting.
 
 Ideas and pull requests are welcome on

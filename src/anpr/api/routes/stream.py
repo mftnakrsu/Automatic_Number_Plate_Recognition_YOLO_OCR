@@ -6,7 +6,8 @@ are dropped on queue overflow to keep latency bounded.
 
 When a read is confirmed by the temporal voter the HMAC-hashed plate is
 persisted to the configured database (raw plate text is never stored — see
-`anpr.storage.hashing` for the KVKK/GDPR rationale).
+`anpr.storage.hashing` for the KVKK/GDPR rationale) and checked against the
+watchlist, which calls the webhook on a match.
 """
 
 from __future__ import annotations
@@ -20,7 +21,14 @@ import numpy as np
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 
 from anpr.api.auth import authorize_websocket
-from anpr.api.deps import app_settings, get_detector, get_reader, get_repo
+from anpr.api.deps import (
+    app_settings,
+    get_detector,
+    get_notifier,
+    get_reader,
+    get_repo,
+    get_watchlist,
+)
 from anpr.config import Settings
 from anpr.detector.base import Detector
 from anpr.imaging import ImageDecodeError, ImageTooLargeError, decode_frame
@@ -31,6 +39,8 @@ from anpr.pipeline import Pipeline
 from anpr.storage.hashing import hash_plate
 from anpr.storage.models import Detection
 from anpr.storage.repository import DetectionRepository
+from anpr.watchlist import Watchlist, alert
+from anpr.webhook import WebhookNotifier
 
 router = APIRouter()
 log = get_logger(__name__)
@@ -82,10 +92,13 @@ async def _producer(
 @router.websocket("/ws/stream")
 async def stream_ws(
     websocket: WebSocket,
+    *,
     settings: Annotated[Settings, Depends(app_settings)],
     detector: Annotated[Detector, Depends(get_detector)],
     reader: Annotated[PlateReader, Depends(get_reader)],
     repo: Annotated[DetectionRepository, Depends(get_repo)],
+    watchlist: Annotated[Watchlist, Depends(get_watchlist)],
+    notifier: Annotated[WebhookNotifier | None, Depends(get_notifier)],
 ) -> None:
     allowed, subprotocol = authorize_websocket(websocket, settings)
     if not allowed:
@@ -151,10 +164,22 @@ async def stream_ws(
                 and event.track_id not in persisted_track_ids
             ):
                 CONFIRMED_PLATES.labels(province_code=event.plate.parsed.province_code).inc()
+                plate_hmac = hash_plate(event.confirmed, pepper)
+                # Before the write, so a failed save can't swallow the alert.
+                alert(
+                    watchlist,
+                    notifier,
+                    plate_hmac,
+                    source="stream",
+                    track_id=event.track_id,
+                    frame_idx=event.frame_idx,
+                    province_code=event.plate.parsed.province_code,
+                    confidence=event.plate.detection.confidence,
+                )
                 await repo.save(
                     Detection(
                         track_id=event.track_id,
-                        plate_hmac=hash_plate(event.confirmed, pepper),
+                        plate_hmac=plate_hmac,
                         province_code=event.plate.parsed.province_code,
                         confidence=event.plate.detection.confidence,
                         bbox_x1=event.plate.detection.bbox.x1,

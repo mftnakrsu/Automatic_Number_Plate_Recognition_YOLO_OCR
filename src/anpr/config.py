@@ -16,6 +16,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _MIN_API_KEY_LEN = 16
 # The key travels in a WebSocket subprotocol token, which rules out most punctuation.
 _API_KEY_CHARS = re.compile(r"[A-Za-z0-9_-]+")
+# Peppers made up because none was configured. Hashes made with one are lost on restart.
+_GENERATED_PEPPERS: set[str] = set()
 
 
 class Settings(BaseSettings):
@@ -62,12 +64,21 @@ class Settings(BaseSettings):
     # subprotocol, so the key stays URL-safe and out of query strings and logs.
     api_key: SecretStr = SecretStr("")
 
+    # Watchlist matches are POSTed here. A secret: chat webhook URLs carry their token.
+    webhook_url: SecretStr = SecretStr("")
+    # Signs each call (X-ANPR-Signature); empty sends unsigned requests.
+    webhook_secret: SecretStr = SecretStr("")
+    webhook_timeout_seconds: float = Field(default=5.0, gt=0.0, le=60.0)
+    # The same plate is announced at most once in this many seconds.
+    webhook_cooldown_seconds: int = Field(default=60, ge=0)
+
     @field_validator("plate_hmac_pepper")
     @classmethod
     def _ensure_pepper(cls, v: SecretStr) -> SecretStr:
         s = v.get_secret_value()
         if not s:
             generated = secrets.token_hex(32)
+            _GENERATED_PEPPERS.add(generated)
             warnings.warn(
                 "ANPR_PLATE_HMAC_PEPPER not set — generated a random one. "
                 "In production, set this env var so plate hashes are stable across restarts.",
@@ -92,6 +103,19 @@ class Settings(BaseSettings):
                 "(generate one with `anpr generate-api-key`)."
             )
         return v
+
+    @field_validator("webhook_url")
+    @classmethod
+    def _check_webhook_url(cls, v: SecretStr) -> SecretStr:
+        s = v.get_secret_value()
+        if s and not s.lower().startswith(("http://", "https://")):
+            raise ValueError("ANPR_WEBHOOK_URL must start with http:// or https://")
+        return v
+
+    @property
+    def pepper_is_generated(self) -> bool:
+        """True when no pepper was configured, so hashes won't survive a restart."""
+        return self.plate_hmac_pepper.get_secret_value() in _GENERATED_PEPPERS
 
     @property
     def auth_required(self) -> bool:
