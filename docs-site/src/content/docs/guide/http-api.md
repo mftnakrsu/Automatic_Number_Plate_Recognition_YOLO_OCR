@@ -105,6 +105,11 @@ There is no plate text in the response, because the database doesn't have it. To
 known plate was seen, compute its hash with the same pepper and compare it with `plate_hmac`; see
 [Privacy](/operations/privacy/).
 
+## Watchlist
+
+`GET`, `POST` and `DELETE` on `/api/v1/watchlist` manage the plates that call a webhook when
+confirmed. See [Watchlist and webhooks](/guide/watchlist/#http-endpoints). Since 0.3.0.
+
 ## Service endpoints
 
 | Endpoint | Response |
