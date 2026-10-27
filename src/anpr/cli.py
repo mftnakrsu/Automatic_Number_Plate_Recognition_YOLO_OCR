@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Annotated, TypeVar
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from anpr import __version__
@@ -241,6 +242,10 @@ async def _watch(
     repo = DetectionRepository(engine) if engine is not None and store else None
     watchlist = Watchlist(WatchlistRepository(engine) if engine is not None else None)
     await watchlist.load()
+    if settings.pepper_is_generated and len(watchlist):
+        err_console.print(
+            "[yellow]ANPR_PLATE_HMAC_PEPPER is not set, so no plate can match the watchlist.[/yellow]"
+        )
     refresher = asyncio.create_task(refresh_worker(watchlist)) if engine is not None else None
     pepper = settings.plate_hmac_pepper.get_secret_value()
     confirmed = 0
@@ -272,7 +277,7 @@ async def _watch(
             else:
                 flag = ""
                 if hit is not None:
-                    flag = "  [red]watchlist[/red]" + (f" {hit.label}" if hit.label else "")
+                    flag = "  [red]watchlist[/red]" + (f" {escape(hit.label)}" if hit.label else "")
                 console.print(
                     f"frame {plate.frame_idx:>6}  track {plate.track_id:>4}  "
                     f"[bold]{plate.plate}[/bold]  {plate.province_name}  "
@@ -311,6 +316,10 @@ watchlist_app = typer.Typer(
 app.add_typer(watchlist_app, name="watchlist")
 
 
+def _has_alnum(plate: str) -> bool:
+    return any(c.isalnum() for c in plate)
+
+
 def _hashing_settings() -> Settings:
     settings = get_settings()
     if settings.pepper_is_generated:
@@ -345,6 +354,9 @@ def watchlist_add(
     """Add a plate, or change its label."""
     from anpr.storage.hashing import hash_plate
 
+    if not _has_alnum(plate):
+        err_console.print("[red]The plate has no letters or digits.[/red]")
+        raise typer.Exit(code=2)
     settings = _hashing_settings()
     plate_hmac = hash_plate(plate, settings.plate_hmac_pepper.get_secret_value())
     asyncio.run(_with_watchlist(settings, lambda w: w.add(plate_hmac, label)))
@@ -385,11 +397,15 @@ def watchlist_import(
     settings = _hashing_settings()
     pepper = settings.plate_hmac_pepper.get_secret_value()
     rows: list[tuple[str, str | None]] = []
+    skipped = 0
     for line in file.read_text(encoding="utf-8").splitlines():
         text = line.strip()
         if not text or text.startswith("#"):
             continue
         plate, _, label = text.partition(",")
+        if not _has_alnum(plate):
+            skipped += 1
+            continue
         rows.append((hash_plate(plate, pepper), label.strip() or None))
 
     async def add_all(watchlist: Watchlist) -> None:
@@ -398,6 +414,8 @@ def watchlist_import(
 
     asyncio.run(_with_watchlist(settings, add_all))
     console.print(f"Added {len(rows)} plates.")
+    if skipped:
+        err_console.print(f"[yellow]Skipped {skipped} lines with no letters or digits.[/yellow]")
 
 
 @watchlist_app.command("list")
@@ -425,7 +443,9 @@ def watchlist_list(
     table.add_column("Label")
     table.add_column("Added")
     for e in rows:
-        table.add_row(e.plate_hmac[:16] + "…", e.label or "—", f"{e.created_at:%Y-%m-%d %H:%M}")
+        table.add_row(
+            e.plate_hmac[:16] + "…", escape(e.label or "—"), f"{e.created_at:%Y-%m-%d %H:%M}"
+        )
     console.print(table)
 
 

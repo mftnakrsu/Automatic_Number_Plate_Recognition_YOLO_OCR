@@ -11,6 +11,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime, timedelta
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -88,20 +89,28 @@ class WatchlistRepository:
             return list(result.scalars().all())
 
     async def upsert(self, plate_hmac: str, label: str | None) -> WatchlistEntry:
-        """Add the plate, or update its label if it is already listed."""
-        async with self._sessionmaker() as s:
-            result = await s.execute(
-                select(WatchlistEntry).where(WatchlistEntry.plate_hmac == plate_hmac)
-            )
-            entry = result.scalars().first()
-            if entry is None:
-                entry = WatchlistEntry(plate_hmac=plate_hmac, label=label)
-            else:
-                entry.label = label
-            s.add(entry)
-            await s.commit()
-            await s.refresh(entry)
-            return entry
+        """Add the plate, or set its label if it is already listed. A None label keeps the old one."""
+        for attempt in range(2):
+            async with self._sessionmaker() as s:
+                result = await s.execute(
+                    select(WatchlistEntry).where(WatchlistEntry.plate_hmac == plate_hmac)
+                )
+                entry = result.scalars().first()
+                if entry is None:
+                    entry = WatchlistEntry(plate_hmac=plate_hmac, label=label)
+                elif label is not None:
+                    entry.label = label
+                s.add(entry)
+                try:
+                    await s.commit()
+                except IntegrityError:
+                    # Another writer inserted the same plate between our select and insert.
+                    if attempt:
+                        raise
+                    continue
+                await s.refresh(entry)
+                return entry
+        raise AssertionError("unreachable")
 
     async def remove(self, plate_hmac: str) -> bool:
         async with self._sessionmaker() as s:

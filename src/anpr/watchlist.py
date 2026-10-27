@@ -37,7 +37,9 @@ class Watchlist:
         if self._repo is not None:
             entry = await self._repo.upsert(plate_hmac, label)
         else:
-            entry = WatchlistEntry(plate_hmac=plate_hmac, label=label)
+            old = self._entries.get(plate_hmac)
+            keep = label if label is not None or old is None else old.label
+            entry = WatchlistEntry(plate_hmac=plate_hmac, label=keep)
         self._entries[plate_hmac] = entry
         return entry
 

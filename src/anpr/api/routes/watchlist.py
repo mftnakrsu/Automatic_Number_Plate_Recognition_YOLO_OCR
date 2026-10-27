@@ -2,6 +2,11 @@
 
 A plate is sent once, as text, and stored as its HMAC; listing and deleting
 work on the hash.
+
+These routes only work with `ANPR_API_KEY` set. Adding a plate and listing
+the watchlist reveals the plate's hash, which could then be looked up in
+`/api/v1/detections`; on an open API anyone could find out whether a plate
+of their choice was seen.
 """
 
 from __future__ import annotations
@@ -19,7 +24,20 @@ from anpr.storage.hashing import hash_plate
 from anpr.storage.models import WatchlistEntry
 from anpr.watchlist import Watchlist
 
-router = APIRouter(prefix="/api/v1", tags=["watchlist"], dependencies=[Depends(require_api_key)])
+
+async def _require_configured_key(settings: Annotated[Settings, Depends(app_settings)]) -> None:
+    if not settings.auth_required:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="the watchlist API needs ANPR_API_KEY to be set",
+        )
+
+
+router = APIRouter(
+    prefix="/api/v1",
+    tags=["watchlist"],
+    dependencies=[Depends(_require_configured_key), Depends(require_api_key)],
+)
 
 
 class WatchlistIn(BaseModel):

@@ -11,8 +11,8 @@ GitHub sign theirs:
     X-ANPR-Signature: sha256=<hex HMAC-SHA256 of "<timestamp>.<body>">
 
 The receiver recomputes the HMAC over the raw body and rejects old timestamps
-to stop replays. Failed calls are retried with exponential backoff; 4xx
-answers other than 429 are not retried. The same plate is announced at most
+to stop replays. Failed calls are retried with exponential backoff; 3xx and
+4xx answers other than 429 are not retried, and redirects are not followed. The same plate is announced at most
 once per cooldown, since one car often comes back as a new track a few
 seconds later.
 """
@@ -28,7 +28,8 @@ import urllib.error
 import urllib.request
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Any
+from email.message import Message as HTTPMessage
+from typing import IO, Any
 
 from anpr import __version__
 from anpr.config import Settings
@@ -41,11 +42,29 @@ _log = get_logger(__name__)
 Sender = Callable[[str, bytes, dict[str, str], float], int]
 
 
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    """urllib would turn a redirected POST into a GET without the body; report the 3xx instead."""
+
+    def redirect_request(
+        self,
+        req: urllib.request.Request,
+        fp: IO[bytes],
+        code: int,
+        msg: str,
+        headers: HTTPMessage,
+        newurl: str,
+    ) -> urllib.request.Request | None:
+        return None
+
+
+_OPENER = urllib.request.build_opener(_NoRedirect)
+
+
 def post_json(url: str, body: bytes, headers: dict[str, str], timeout: float) -> int:
-    """POST `body` and return the HTTP status. Network errors raise `OSError`."""
+    """POST `body` and return the HTTP status, 3xx included. Network errors raise."""
     request = urllib.request.Request(url, data=body, headers=headers, method="POST")
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with _OPENER.open(request, timeout=timeout) as response:
             return response.status
     except urllib.error.HTTPError as e:
         return e.code
@@ -113,7 +132,7 @@ class WebhookNotifier:
             return False
         self._last_sent[key] = now
         body = json.dumps(event, ensure_ascii=False).encode("utf-8")
-        task = asyncio.create_task(self._deliver(body))
+        task = asyncio.create_task(self._deliver(key, body))
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)
         return True
@@ -129,7 +148,7 @@ class WebhookNotifier:
             headers["X-ANPR-Signature"] = sign(self._secret, timestamp, body)
         return headers
 
-    async def _deliver(self, body: bytes) -> bool:
+    async def _deliver(self, key: str, body: bytes) -> bool:
         loop = asyncio.get_running_loop()
         status: int | None = None
         tried = 0
@@ -139,16 +158,20 @@ class WebhookNotifier:
                 status = await loop.run_in_executor(
                     None, self._sender, self._url, body, self._headers(body), self._timeout
                 )
-            except (OSError, ValueError) as e:
+            except Exception as e:
+                # Only the type: the message of some errors (InvalidURL) quotes the URL,
+                # and chat webhook URLs carry their token.
                 status = None
                 _log.warning("webhook.error", attempt=attempt, error=type(e).__name__)
             if status is not None and 200 <= status < 300:
                 WEBHOOK_DELIVERIES.labels(result="ok").inc()
                 return True
-            if status is not None and 400 <= status < 500 and status != 429:
+            if status is not None and 300 <= status < 500 and status != 429:
                 break
             if attempt < self._attempts:
                 await asyncio.sleep(self._backoff * 2 ** (attempt - 1))
+        # Let the next sighting try again instead of waiting out the cooldown.
+        self._last_sent.pop(key, None)
         WEBHOOK_DELIVERIES.labels(result="failed").inc()
         _log.warning("webhook.failed", status=status, attempts=tried)
         return False

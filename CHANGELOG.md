@@ -13,7 +13,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
   drop (`--reconnect`, default 5 attempts).
 - Watchlist with webhooks. `anpr watchlist add|import|remove|list` and
   `GET/POST/DELETE /api/v1/watchlist` manage the plates to look for; each is
-  stored only as its HMAC, in a new `watchlist` table. When `/ws/stream` or
+  stored only as its HMAC, in a new `watchlist` table. The HTTP routes need
+  `ANPR_API_KEY` to be set (403 otherwise), since they hash any plate sent. When `/ws/stream` or
   `anpr watch` confirms a listed plate, the JSON event (hash, label, province,
   track, confidence; never the plate text) is POSTed to `ANPR_WEBHOOK_URL` in
   the background, signed with `ANPR_WEBHOOK_SECRET` as

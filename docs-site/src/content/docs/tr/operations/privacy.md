@@ -24,7 +24,9 @@ veritabanında hiçbir plakanın okunabilir hâlde durmaması için tasarlandı.
 
 [İzleme listesi](/tr/guide/watchlist/) de aynı şekilde tutulur: eklediğiniz her plaka geldiği anda
 özetlenir, yalnızca özet ve etiketiniz yazılır. Webhook çağrıları plakayı değil, özeti ve etiketi
-taşır.
+taşır. İzleme listesinin HTTP uçları `ANPR_API_KEY` olmadan çalışmaz: gönderilen her plakayı
+özetledikleri için açık bir API'de herkesin bir plakanın görülüp görülmediğini anlamasına izin
+verirlerdi.
 
 ## Özet nasıl çalışır
 
