@@ -32,6 +32,9 @@ tracking and the vote. It and `anpr watch --store` are the only paths that write
 | `postprocess/temporal.py` | Confidence-weighted, per-character majority vote over a track's best reads. |
 | `postprocess/dewarp.py` | On the stream, scales the crop to a fixed height. A placeholder for a real perspective correction. |
 | `pipeline.py` | `infer_image` for one image, and the async `Pipeline` for streams. |
+| `video.py` | Frame sources for `anpr watch`: video files, network streams and cameras, with reconnects for live sources. |
+| `watchlist.py` | The watchlist, held in memory as HMAC hashes and reloaded now and then from the database. |
+| `webhook.py` | Signed, retried POSTs of watchlist matches to `ANPR_WEBHOOK_URL`, with a per-plate cooldown. |
 | `imaging.py` | Decodes uploads and frames, and rejects them by declared size before decoding. |
 | `storage/` | The `Detection` table (SQLModel), HMAC hashing, the repository and the retention task. |
 | `api/` | The FastAPI app, its routes, the web page and the middleware for request IDs and metrics. |
@@ -47,7 +50,8 @@ them run in a fraction of a second without any model.
 
 **Format rules after OCR, not inside it.** The OCR model is general. Knowing that a Turkish plate is
 `NN L{1-3} N{2-4}` lets the parser fix the characters a general model gets wrong, such as an `O` in
-a digit position. Other countries would need their own parser; see the [Roadmap](/roadmap/).
+a digit position. Each country has its own `PlateFormat` with its own layout, so the same fixes
+work for every enabled format; see [Plate formats](/guide/plate-formats/).
 
 **Hash at the edge of storage.** The plate text exists in memory and in the response, and is hashed
 right where a row is written, so no code path can store it by mistake.

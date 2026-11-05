@@ -4,6 +4,14 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Changed
+
+- The Turkish documentation now has the Roadmap, Architecture and Contributing
+  pages. The README and the architecture page catch up with 0.3.0: plate
+  formats, `video.py`, `watchlist.py`, `webhook.py` and the test count.
+- Dependabot no longer proposes Python 3.15 base images while
+  `requires-python` is `<3.15`.
+
 ## [0.3.0] — 2026-10-27
 
 ### Added
