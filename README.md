@@ -66,7 +66,7 @@ uv run anpr infer tests/fixtures/sample_plate.jpg
 | **Storage** | SQLModel + aiosqlite default; HMAC-SHA256 plate hashing (no raw plate text ever stored) |
 | **Watchlist** | Plates to look for, kept as hashes; signed webhook call when one is confirmed |
 | **Observability** | structlog + Prometheus `/metrics` + opt-in OpenTelemetry (`otel` extras) |
-| **Packaging** | `uv` + `pyproject.toml`, `ruff` (lint + format), `pyright`, `pytest` (60+ tests) |
+| **Packaging** | `uv` + `pyproject.toml`, `ruff` (lint + format), `pyright`, `pytest` (190 tests) |
 
 ---
 
@@ -103,7 +103,7 @@ Full OpenAPI at <http://localhost:8000/docs>.
 │      ONNX                                    ONNX     │
 │                       │                               │
 │                       ▼                               │
-│              parse_turkish_plate                      │
+│              parse_plate (ANPR_PLATE_FORMATS)         │
 │              correct_confusions                       │
 │              TemporalVoter (majority)                 │
 └──────────────────────────────────────────────────────┘
@@ -157,7 +157,7 @@ If you deploy this for an organization, you'll likely need to publish a KVKK Ayd
 uv sync --all-extras --group dev
 make lint       # ruff check + format check
 make type       # pyright
-make test       # pytest (60+ tests)
+make test       # pytest (190 tests)
 make serve      # uvicorn --reload
 ```
 
@@ -180,9 +180,10 @@ src/anpr/
 │   └── routes/          health, infer, stream (WS), detections, watchlist
 ├── detector/            Detector Protocol + fast-alpr adapter
 ├── ocr/                 PlateReader Protocol + fast-plate-ocr adapter
-├── postprocess/         turkish, confusion, temporal, dewarp
+├── postprocess/         formats (per country), turkish, confusion, temporal, dewarp
 ├── storage/             SQLModel Detection + HMAC + repository + retention
 ├── tracker/             IoU greedy tracker
+├── video.py             frame sources for `anpr watch` (files, RTSP, cameras)
 ├── watchlist.py         in-memory watchlist + match alerts
 ├── webhook.py           signed, retried webhook calls
 ├── observability.py     Prometheus metrics + optional OTel
@@ -191,8 +192,8 @@ src/anpr/
 ├── cli.py               typer
 └── pipeline.py          sync infer_image + async Pipeline
 tests/
-├── unit/                turkish, confusion, temporal, iou_tracker, hashing (+ hypothesis properties)
-└── integration/         pipeline_smoke, api_smoke, metrics, storage, infer_response_shape, pipeline_real
+├── unit/                formats, turkish, confusion, temporal, iou_tracker, hashing, imaging, video, webhook, cli_keys (+ hypothesis properties)
+└── integration/         pipeline_smoke, api_smoke, api_auth, metrics, storage, infer_response_shape, plate_formats, watchlist, cli_watch, pipeline_real
 legacy/                  2022 codebase preserved verbatim
 ```
 
@@ -209,9 +210,9 @@ The 2022 code is **not** removed — it sits intact under [`legacy/`](legacy/). 
 | Flask 1.1.2 (CVE) | FastAPI 0.115 + uvicorn |
 | `python main.py` (webcam) and `python app.py` (Flask, parallel + no OCR) | `anpr infer image.jpg`, `anpr serve` |
 | No tracking | IoU greedy + temporal majority voting |
-| No plate validation | Turkish format parser + confusion correction |
-| `requirements.txt` (broken: `tensorrt==0.0.1.dev5`, etc.) | `pyproject.toml` + `uv.lock` |
-| No tests, no CI | 60+ tests, GitHub Actions matrix |
+| No plate validation | Plate format parsers (Türkiye + six EU countries) + confusion correction |
+| `requirements.txt` (broken: `tensorrt==0.0.1.dev5`, etc.) | `pyproject.toml` (installed with `uv`) |
+| No tests, no CI | 190 tests, GitHub Actions matrix (Python 3.11–3.14) |
 | `print()` | structlog + Prometheus + opt-in OTel |
 | CSV append, raw plate text | SQLModel + HMAC-SHA256 + retention worker |
 
