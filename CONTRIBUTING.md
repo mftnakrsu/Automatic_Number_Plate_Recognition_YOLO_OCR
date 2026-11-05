@@ -33,7 +33,7 @@ smoke test on every PR. To run the same checks locally:
 ```bash
 make lint       # ruff check + ruff format --check
 make type       # pyright
-make test       # pytest (60+ tests)
+make test       # pytest (190 tests)
 ```
 
 `pre-commit` hooks are configured — opt in with:

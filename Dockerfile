@@ -21,7 +21,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
 WORKDIR /app
 
-# Copy lockfile first so layer cache survives source changes
+# Copy the project metadata and source; there is no lockfile, so uv resolves from pyproject.toml
 COPY pyproject.toml README.md ./
 COPY src/ ./src/
 
