@@ -15,14 +15,9 @@ receive patches here. Use the modernized pipeline (`pip install anpr-pipeline`).
 
 **Please do not open a public issue for security problems.**
 
-### Preferred — GitHub Private Security Advisory
+### GitHub Private Security Advisory
 
 <https://github.com/mftnakrsu/Automatic_Number_Plate_Recognition_YOLO_OCR/security/advisories/new>
-
-### Alternative — Email
-
-<57320216+mftnakrsu@users.noreply.github.com> — include `[ANPR-SECURITY]` in the subject. PGP key
-available on request.
 
 ## Response Timeline
 
