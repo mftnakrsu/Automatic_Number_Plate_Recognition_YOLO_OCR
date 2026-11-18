@@ -9,7 +9,7 @@ description = "Automatic Number Plate Recognition — 2026 modernized pipeline (
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 license = "MIT"
-authors = [{ name = "Meftun AKARSU", email = "57320216+mftnakrsu@users.noreply.github.com" }]
+authors = [{ name = "Meftun AKARSU" }]
 keywords = ["anpr", "alpr", "license-plate", "ocr", "yolo", "computer-vision"]
 classifiers = [
     "Development Status :: 4 - Beta",
